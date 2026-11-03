@@ -229,14 +229,14 @@
 <header class="nav">
   <div class="wrap row">
     <span class="brand"><span class="dot"></span>hostcd</span>
-    <span class="status">Public preview</span>
+    <span class="status">v0.3.0 • open core</span>
     <nav>
       <a class="navlink" href="#why">Why hostcd</a>
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#editions">Editions</a>
       <a class="navlink" href="#faq">FAQ</a>
       <a class="navlink" href="#contact">Contact</a>
-      <a class="ghlink" href="https://github.com/Inblade/hostcd"><span class="star">★</span> GitHub</a>
+      <a class="ghlink" href="https://github.com/Inblade/hostcd-dist"><span class="star">★</span> GitHub</a>
       <button class="iconbtn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
     </nav>
   </div>
@@ -253,7 +253,7 @@
           across VMs and bare metal — without inbound agent ports or Kubernetes.</p>
         <div class="cta">
           <a class="btn primary" href="#get-started">View installation guide</a>
-          <a class="btn ghost" href="https://github.com/Inblade/hostcd">View on GitHub ↗</a>
+          <a class="btn ghost" href="https://github.com/Inblade/hostcd-dist">View on GitHub ↗</a>
         </div>
         <p class="meta"><b>Self-hosted</b> · <b>Pull-based agents</b> · <b>Free for up to 10 hosts</b></p>
       </div>
@@ -378,7 +378,7 @@
           <li>Automated audit export &amp; SIEM delivery</li>
           <li>Email support · 2-business-day response target</li>
         </ul>
-        <div class="act"><a class="btn primary" href="https://github.com/Inblade/hostcd#readme">Install and start 14-day trial ↗</a></div>
+        <div class="act"><a class="btn primary" href="https://github.com/Inblade/hostcd-dist#readme">Install and start 14-day trial ↗</a></div>
       </div>
       <div class="ed">
         <div class="top"><h3>Enterprise</h3><span class="price">Custom · volume host limits</span></div>
@@ -434,7 +434,7 @@
       <div class="s"><b>Pull-based by default</b><span>Optional SSH only at initial enrollment.</span></div>
     </div>
     <p class="note-line">Regular operation is pull-based HTTPS; optional SSH is used only during initial host enrollment.
-      Full details in the <a href="https://github.com/Inblade/hostcd/blob/main/SECURITY.md">security policy &amp; threat model ↗</a>.</p>
+      Full details in the <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md">security policy &amp; threat model ↗</a>.</p>
   </div>
 </section>
 
@@ -462,11 +462,16 @@
     <h2>Reconcile your fleet from Git.</h2>
     <p>Install the control plane, enroll a host, point it at a Git repo. Self-hosted, source-available,
        free for your first 10 hosts.</p>
-    <div class="cta">
-      <a class="btn primary" href="https://github.com/Inblade/hostcd#readme">View installation guide ↗</a>
-      <a class="btn ghost" href="https://github.com/Inblade/hostcd/blob/main/docs/RUNBOOK.md">Read the docs ↗</a>
+    <div class="installbox" style="margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px;overflow-x:auto">
+      <div class="eyebrow" style="margin-bottom:9px">Install the control plane · Linux</div>
+      <code class="mono" style="display:block;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--ink)">HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0 \
+curl -fsSL https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0/install.sh | sh -s -- server</code>
     </div>
-    <p class="meta" style="margin-top:20px">A 14-day Team trial starts automatically on your first host — no key, no sign-up — and a free 30-day trial token (<a href="#contact">request it</a>) extends it. One-command install arrives with the public release channel. Want expiry reminders and help reaching your first sync? <a href="#contact">Leave your email (optional)</a>.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Inblade/hostcd-dist#readme">View installation guide ↗</a>
+      <a class="btn ghost" href="https://github.com/Inblade/hostcd-dist/blob/main/docs/RUNBOOK.md">Read the docs ↗</a>
+    </div>
+    <p class="meta" style="margin-top:20px">A 14-day Team trial starts automatically on your first host — no key, no sign-up — and a free 30-day trial token (<a href="#contact">request it</a>) extends it. The one-command install above pins v0.3.0 and verifies the download. Want expiry reminders and help reaching your first sync? <a href="#contact">Leave your email (optional)</a>.</p>
   </div>
 </section>
 
@@ -513,14 +518,14 @@
     <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
     <span>Your Linux fleet, reconciled to Git.</span>
     <span>
-      <a href="https://github.com/Inblade/hostcd">GitHub</a> ·
-      <a href="https://github.com/Inblade/hostcd/blob/main/SECURITY.md">Security</a> ·
-      <a href="https://github.com/Inblade/hostcd/releases">Releases</a> ·
-      <a href="https://github.com/Inblade/hostcd/blob/main/LICENSE">BSL 1.1</a>
+      <a href="https://github.com/Inblade/hostcd-dist">GitHub</a> ·
+      <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md">Security</a> ·
+      <a href="https://github.com/Inblade/hostcd-dist/releases">Releases</a> ·
+      <a href="https://github.com/Inblade/hostcd-dist/blob/main/LICENSE">BSL 1.1</a>
     </span>
   </div>
   <div class="wrap" style="margin-top:12px">
-    <span class="draftnote">Public preview · the one-command public install channel is coming soon. Founding pricing (€99/mo) is available for a limited number of preview customers.</span>
+    <span class="draftnote">v0.3.0 is live — install with one command below. Founding pricing (€99/mo) is available for a limited number of early customers.</span>
   </div>
 </footer>
 
