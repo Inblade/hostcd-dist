@@ -203,59 +203,66 @@ in the README's *Clusters (provision Kubernetes over SSH)* section.
 
 ## Subscription licensing
 
-hostcd is **open-core** (see `LICENSING.md`). The **core** — server, agent, web
-UI and git-driven host config — is free and needs no license. A set of
-**Enterprise features** require a license that grants them:
+hostcd is **open-core** (see `LICENSING.md`) with three tiers, all served by the
+**same binary** — the tier is decided by the installed license, not a separate
+build:
 
-| Feature key    | Capability |
-|----------------|------------|
-| `sso`          | SAML 2.0 and OIDC single sign-on |
-| `ha`           | Postgres-backed active/standby HA (`-ha`/`-store-dsn`) |
-| `scim`         | SCIM 2.0 provisioning (`-scim-token`) |
-| `vault`        | Vault Transit sealing (`-vault-*`) |
+| Tier | Host cap | What it adds |
+|------|----------|--------------|
+| **Community** (free, no license) | 10 managed hosts | core only — server, agent, web UI, git-driven host config |
+| **Team** (14-day auto trial, then a license) | the licensed seats (50 during the trial) | `approvals`, `notifications`, `audit_export` |
+| **Enterprise** (contracted license) | the contracted seats (unlimited if seatless) | everything in Team **plus** `sso`, `scim`, `ha`, `vault` |
+
+| Feature key     | Tier | Capability |
+|-----------------|------|------------|
+| `approvals`     | Team | approval gates before production syncs |
+| `notifications` | Team | notification / webhook delivery |
+| `audit_export`  | Team | automated audit-event delivery to a webhook / SIEM sink |
+| `sso`           | Enterprise | SAML 2.0 and OIDC single sign-on |
+| `scim`          | Enterprise | SCIM 2.0 provisioning (`-scim-token`) |
+| `ha`            | Enterprise | Postgres-backed active/standby HA (`-ha`/`-store-dsn`) |
+| `vault`         | Enterprise | Vault Transit sealing (`-vault-*`) |
 
 hostcd verifies a **license token** offline against a built-in ed25519 public
 key — there is no phone-home, so an air-gapped deployment works the same. The
-license carries a feature list. **Enforcement fails closed**: if an Enterprise
-feature is configured but no valid license grants it, the server **refuses to
-start** and names the feature. With no license the deployment runs as the
-**Community** edition — every *core* feature works; no Enterprise feature does.
+Team trial starts **automatically** on the first managed host (no key, no
+sign-up); a license carries a plan, a seat count and a feature list.
 
-Operate it from **Settings → Subscription**: paste a token to install or renew
-it, or remove it to fall back to Community. A token can also be supplied at
-startup with `-license-key` (env `HOSTCD_LICENSE_KEY`); a license installed
-through the UI takes precedence so a renewal survives restarts without a flag
-change. (A feature gate is evaluated at startup, so a token that *enables* a
-feature must be present via `-license-key`/embedded at boot, not only installed
-later through the UI.)
+**Every tier feature is gated at runtime by the live entitlement — the server
+never refuses to start, and a license installed through the UI takes effect
+immediately, without a restart.** With no license the deployment runs as
+**Community**: the control plane and all *core* features work, the host cap is
+10, and tier features are off.
+
+Operate it from **Settings → Subscription**: paste a token to install or renew it
+(effective immediately), or remove it to fall back to Community. A token can also
+be supplied at startup with `-license-key` (env `HOSTCD_LICENSE_KEY`); a license
+installed through the UI takes precedence so a renewal survives restarts without a
+flag change.
+
+#### Grace and graceful degradation after a lapse
 
 A subscription keeps working for a **grace period** (default 14 days,
 `-license-grace`) past its expiry; tier features keep working through the grace
 window and go dormant once it lapses. A lapse **never** blocks the control plane
-or core writes — there is no global write-lock — so pasting a current token in
-the UI restores the features at any time.
+or core writes — there is no global write-lock — and gating is at **runtime**, so
+the server **never stops**:
 
-#### Recovering an Enterprise feature after a lapse
-
-Every Enterprise feature is gated at **runtime** by the live entitlement, so a
-lapse **never stops the server** — it starts and keeps your state reachable, and
-you re-enable the feature by installing a current token, with no restart:
-
+- **Over-cap hosts are frozen, not dropped**: when a plan shrinks below the host
+  count, surplus hosts hold their last accepted revision and self-heal to it — no
+  host is deleted. Installing a current token lifts the freeze.
 - **HA and Vault** hold or unseal your data: on a lapse the server starts
   degraded, logs a warning, and your state stays reachable.
-- **SSO and SCIM** start **disabled** (a warning in the log): SSO login behaves
-  as "not configured" and the SCIM endpoint returns `404`, while **local admin
-  login always works**, so you are never locked out of the UI.
+- **SSO and SCIM** go **disabled** (a warning in the log): SSO login behaves as
+  "not configured" and the SCIM endpoint returns `404`, while **local admin login
+  always works**, so you are never locked out of the UI.
+- **Approvals, notifications and audit export** simply stop gating / delivering
+  until a current token is installed.
 
-Recover by either:
-
-1. install a current token in **Settings → License** (no restart) — or pass it in
-   `-license-key` (env `HOSTCD_LICENSE_KEY`) on the next start; or
-2. for a lapse of a few days, rely on the 14-day grace window, which keeps the
-   feature running while you renew.
-
-Removing the feature's configuration flags is optional — the server no longer
-requires it to boot.
+Recover by installing a current token in **Settings → License** (no restart), or
+pass it in `-license-key` on the next start; for a short lapse the 14-day grace
+window keeps features running while you renew. Removing a feature's configuration
+flags is never required — the server no longer needs them to boot.
 
 ### Issuing licenses (maintainer)
 
