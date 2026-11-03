@@ -12,10 +12,9 @@ is the map, that section is the territory.
 
 **Do not open a public issue for a security problem.** Report it privately:
 
+- Email **security@hostcd.dev** with `hostcd security` in the subject, or
 - GitHub: use **Security → Report a vulnerability** (private advisory) on this
-  repository, or
-- Email: send to the maintainer address listed on the repository owner's GitHub
-  profile, with `hostcd security` in the subject.
+  repository.
 
 Please include a description, the version or commit, and the smallest steps that
 reproduce it. We aim to acknowledge within **3 business days** and to agree a
