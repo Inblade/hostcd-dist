@@ -450,7 +450,7 @@
       <div class="qa"><h3>Does a lapsed license lock me out?</h3><p>No. A lapse never deletes data or stops the control plane. After the grace period, hosts above the Community limit stay visible and keep enforcing the revision they last accepted — hostcd still corrects drift back to it — but they receive no newer Git revisions until a license is installed or a slot is freed. Backup, full data export, the audit trail, local admin login and license installation stay available — always. (Automated audit integrations are the Team feature, not access to your own data.)</p></div>
       <div class="qa"><h3>Is licensing really offline?</h3><p>Yes. License tokens are signed and verified locally against an embedded key — there is no phone-home, so air-gapped deployments work the same.</p></div>
       <div class="qa"><h3>Which operating systems are supported?</h3><p>Ubuntu/Debian and RHEL/Rocky, tested and supported. A Windows Server agent is in development — see the docs for its status.</p></div>
-      <div class="qa"><h3>Is the source available?</h3><p>Yes. The Community core is Business Source License 1.1 (it converts to Apache-2.0 on its change date). Enterprise files are source-available for audit, gated by a signed key.</p></div>
+      <div class="qa"><h3>What is the licence?</h3><p>The Community core is under the Business Source License 1.1 — a source-available licence that converts to Apache-2.0 on its change date. The public release ships signed binaries with cosign provenance and an SBOM you can verify independently; the code repository is not public yet. Enterprise modules are gated by a signed key.</p></div>
       <div class="qa"><h3>What do I actually run?</h3><p>A single control plane for the fleet and one lightweight agent per host — static binaries a small team can operate. Your desired state stays in your own Git repository.</p></div>
     </div>
   </div>
@@ -460,8 +460,7 @@
   <div class="wrap">
     <span class="eyebrow">Get started</span>
     <h2>Reconcile your fleet from Git.</h2>
-    <p>Install the control plane, enroll a host, point it at a Git repo. Self-hosted, source-available,
-       free for your first 10 hosts.</p>
+    <p>Install the control plane, enroll a host, point it at a Git repo. Self-hosted and free for your first 10 hosts.</p>
     <div class="installbox" style="margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px;overflow-x:auto">
       <div class="eyebrow" style="margin-bottom:9px">Install the control plane · Linux</div>
       <code class="mono" style="display:block;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--ink)">HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0 \
