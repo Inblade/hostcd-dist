@@ -17,12 +17,12 @@ The installer needs root, and it must be told to fetch binaries from this mirror
 (the `HOSTCD_RELEASE_BASE` goes to the installer, not to `curl`):
 
 ```sh
-curl -fsSL https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0/install.sh \
-  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0 sh -s -- server
+curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
+  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download sh -s -- server
 ```
 
 Swap `server` for `agent https://<control-plane> <TOKEN>` to enroll a managed host.
-Pin a different release by replacing `v0.3.0` in both URLs.
+This pins the latest release; to pin a specific version, replace `latest/download` with `download/vX.Y.Z` in both URLs.
 
 ## Verify
 
