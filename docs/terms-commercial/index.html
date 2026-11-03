@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commercial Subscription Terms — hostcd</title>
+<meta name="description" content="hostcd Commercial Subscription Terms for paid Team and Enterprise subscriptions: fees, taxes, renewal, support, warranty and liability.">
+<link rel="canonical" href="https://hostcd.dev/terms-commercial/">
+<meta name="robots" content="index,follow">
+<style>
+  :root{--bg:#0d0e12;--panel:#14161c;--ink:#e9ecf1;--muted:#9aa3b2;--line:#242732}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:780px;margin:0 auto;padding:56px 22px 72px}
+  a{color:#e98a52;text-decoration:none}a:hover{text-decoration:underline}
+  h1{font-size:30px;margin:0 0 6px}h2{font-size:19px;margin:34px 0 8px}
+  .eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:var(--muted)}
+  .meta{color:var(--muted);font-size:14px}
+  ul{padding-left:20px}li{margin:4px 0}
+  hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  .back{display:inline-block;margin-bottom:22px;color:var(--muted)}
+  strong{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← hostcd.dev</a>
+  <span class="eyebrow">Legal</span>
+  <h1>Commercial Subscription Terms</h1>
+  <p class="meta">Version 1.0 — effective 3 November 2026.</p>
+
+  <p>These hostcd Commercial Subscription Terms (the "Terms") govern the paid Team and Enterprise
+  subscriptions to hostcd offered by <strong>Danylo Kochetov, a sole operator established in Poland,
+  trading as "hostcd"</strong> ("Licensor", "we"). They apply to the entity identified as the Customer
+  in an Order Form that references them ("Customer", "you"). The <strong>Order Form and these Terms
+  together form the "Agreement".</strong> By signing an Order Form, or by completing self-serve
+  checkout and paying the Fee, the Customer agrees to this Agreement.</p>
+
+  <p>The free <strong>Community</strong> edition and the open-core source of hostcd are licensed
+  separately under the <strong>Business Source License 1.1 (BSL 1.1)</strong> and are <strong>not</strong>
+  governed by this Agreement, except that this Agreement grants the additional commercial rights needed
+  to use the paid Licensed Features.</p>
+
+  <h2>1. Definitions</h2>
+  <ul>
+    <li><strong>Licensed Software</strong> — the hostcd control plane and agent software distributed by the Licensor.</li>
+    <li><strong>Licensed Features</strong> — the Team and/or Enterprise features identified in the Order Form (e.g. SSO, SCIM, HA, Vault-backed sealing, audit export/integrations) that are unlocked by a valid License Token for the Subscription Term.</li>
+    <li><strong>License Token</strong> — the signed entitlement issued to the Customer that enables the Licensed Features and the licensed host count.</li>
+    <li><strong>Host</strong> — a server (physical or virtual) managed by hostcd; the licensed host count in the Order Form is the maximum number of Hosts the Customer may manage concurrently under the paid plan.</li>
+    <li><strong>Subscription Term</strong> — the Initial Term plus any Renewal Terms stated in the Order Form.</li>
+    <li><strong>Documentation</strong> — the then-current hostcd technical documentation.</li>
+    <li><strong>Fees</strong> — the amounts stated in the Order Form.</li>
+  </ul>
+
+  <h2>2. Structure and order of precedence</h2>
+  <p>The Agreement consists of the Order Form and these Terms. If they conflict, the Order Form controls
+  for that order, then these Terms. Any Customer purchasing or vendor-onboarding terms (e.g. in a portal
+  or purchase order) are rejected and have no effect unless expressly agreed in a signed Order Form.</p>
+
+  <h2>3. Trial</h2>
+  <p>If the Order Form grants a trial, or the Customer activates a time-limited trial in the product, the
+  Licensed Features are provided for the trial period <strong>"as is", without warranty, and with the
+  Licensor's liability limited to the maximum extent permitted by law.</strong> At the end of the trial
+  the subscription either converts to a paid Subscription Term (if purchased) or the Licensed Features
+  cease; the Community limits then apply.</p>
+
+  <h2>4. Licence grant, subscription and restrictions</h2>
+  <p>4.1 <strong>Grant.</strong> Subject to payment of the Fees and to this Agreement, the Licensor grants
+  the Customer a non-exclusive, non-transferable, non-sublicensable right, during the Subscription Term,
+  to install and use the Licensed Software and to enable the Licensed Features on up to the licensed host
+  count, for the Customer's internal business operations.</p>
+  <p>4.2 <strong>License Token.</strong> The Licensor will issue a License Token enabling the Licensed
+  Features and host count for the Subscription Term. The Customer must not share, tamper with, or attempt
+  to forge a License Token, or circumvent the host count or feature entitlements.</p>
+  <p>4.3 <strong>Restrictions.</strong> Except as the BSL 1.1 or applicable law permits, the Customer will
+  not: (a) provide the Licensed Features to third parties as a hosted or managed service; (b) remove or
+  alter proprietary notices; (c) use the Licensed Software other than as permitted by this Agreement and
+  the BSL. The open-core source remains governed by the BSL 1.1.</p>
+  <p>4.4 <strong>Graceful degradation.</strong> The Customer acknowledges that if the subscription lapses,
+  the Licensed Features degrade in the manner described in the Documentation: the control plane and the
+  Customer's data remain available, Hosts above the Community limit keep enforcing their last accepted
+  configuration, and no data is deleted. This behaviour is a design choice and not a defect.</p>
+
+  <h2>5. Customer responsibilities</h2>
+  <p>For <strong>self-hosted</strong> deployments the Customer operates the Licensed Software on its own
+  infrastructure and is responsible for its environment, access control, backups, and the security of the
+  hosts the agent manages (the agent runs with elevated privileges). The Customer will keep the License
+  Token confidential and use the Licensed Software in compliance with applicable law.</p>
+
+  <h2>6. Fees, payment and taxes</h2>
+  <p>6.1 <strong>Fees.</strong> The Customer will pay the Fees stated in the Order Form. Self-serve Team
+  subscriptions are charged automatically to the Customer's payment method (via our payment processor,
+  Stripe). Enterprise Fees are invoiced.</p>
+  <p>6.2 <strong>Payment terms.</strong> Invoiced Fees are due <strong>Net 30 days</strong> from the
+  invoice date. Undisputed amounts not paid when due may accrue interest at <strong>1.5% per month (or the
+  maximum permitted by law, if lower)</strong> from the due date until paid, and the Licensor may suspend
+  the Licensed Features after reasonable notice for continued non-payment.</p>
+  <p>6.3 <strong>Taxes.</strong> Fees are <strong>exclusive of taxes</strong>. The Customer is responsible
+  for all sales, use, VAT, GST, and similar taxes on the Fees, excluding taxes on the Licensor's net
+  income. For EU B2B supplies, where the Customer provides a valid VAT identification number, the
+  <strong>reverse-charge mechanism</strong> applies and the Customer accounts for VAT in its member state.
+  Where the Licensor is required to collect tax, it will add it to the invoice.</p>
+  <p>6.4 <strong>No refunds.</strong> Except for the limited-warranty remedy in §9 and any non-waivable
+  consumer rights, Fees are non-refundable and subscriptions are non-cancellable for the paid term.</p>
+
+  <h2>7. Term, renewal and termination</h2>
+  <p>7.1 <strong>Term.</strong> This Agreement starts on the Subscription Start Date and continues for the
+  Subscription Term.</p>
+  <p>7.2 <strong>Auto-renewal.</strong> At the end of the Initial Term and each Renewal Term, the
+  subscription <strong>renews automatically</strong> for a further term of equal length at the then-current
+  list price, <strong>unless either party gives written notice of non-renewal at least 30 days before the
+  end of the then-current term.</strong></p>
+  <p>7.3 <strong>Termination for cause.</strong> Either party may terminate this Agreement if the other
+  materially breaches it and does not cure the breach within <strong>30 days</strong> after written notice.
+  The Licensor may suspend or terminate for non-payment per §6.2.</p>
+  <p>7.4 <strong>Effect of termination.</strong> On expiry or termination, the Customer's right to the
+  Licensed Features ends and the Customer must stop using them; Hosts revert to the Community edition under
+  the BSL 1.1 (no data is deleted and the control plane keeps running). Fees already due remain payable.
+  Clauses that by their nature should survive (including §§6, 9, 10, 11, 12, 16) survive termination.</p>
+
+  <h2>8. Support and updates</h2>
+  <p>8.1 <strong>Updates.</strong> During the Subscription Term the Customer is entitled to updates and new
+  versions of the Licensed Software that the Licensor generally makes available to subscribers of the same
+  plan.</p>
+  <p>8.2 <strong>Support.</strong> The Licensor will use <strong>commercially reasonable efforts</strong>
+  to provide support with the target first-response times stated in the Order Form. Support targets are
+  objectives, not guarantees. For self-hosted deployments the Customer operates the software and
+  <strong>availability is the Customer's responsibility; these Terms do not include an uptime SLA.</strong>
+  Any hosted/SaaS uptime commitment is set out only in a separate SLA addendum.</p>
+
+  <h2>9. Warranties and disclaimer</h2>
+  <p>9.1 <strong>Limited warranty.</strong> The Licensor warrants that, during the Subscription Term, the
+  Licensed Software will materially conform to the Documentation. The Customer's sole and exclusive remedy,
+  and the Licensor's entire liability, for breach of this warranty is that the Licensor will use
+  commercially reasonable efforts to correct the non-conformity and, if it cannot do so within a reasonable
+  time, the Customer may terminate the affected subscription and receive a pro-rata refund of pre-paid Fees
+  for the unused period.</p>
+  <p>9.2 <strong>Disclaimer.</strong> Except as expressly stated in §9.1, the Licensed Software and all
+  support are provided <strong>"as is" and "as available", and the Licensor disclaims all other
+  warranties</strong>, express or implied, including merchantability, fitness for a particular purpose, and
+  non-infringement, to the maximum extent permitted by law.</p>
+
+  <h2>10. Limitation of liability</h2>
+  <p>10.1 <strong>Exclusion of indirect damages.</strong> To the maximum extent permitted by law, neither
+  party is liable for any indirect, incidental, special, consequential, or exemplary damages, or for lost
+  profits, revenue, data, or goodwill, arising out of or relating to this Agreement, even if advised of the
+  possibility.</p>
+  <p>10.2 <strong>Cap.</strong> To the maximum extent permitted by law, each party's <strong>total
+  aggregate liability</strong> arising out of or relating to this Agreement will not exceed the
+  <strong>total Fees paid or payable by the Customer under this Agreement in the 12 months immediately
+  preceding the event</strong> giving rise to the liability.</p>
+  <p>10.3 <strong>Exceptions.</strong> The limitations in §§10.1–10.2 do not apply to: (a) the Customer's
+  payment obligations; (b) a party's liability for death or personal injury caused by its negligence, for
+  fraud or fraudulent misrepresentation; or (c) any liability that cannot be excluded or limited under
+  applicable law.</p>
+
+  <h2>11. Intellectual property and feedback</h2>
+  <p>The Licensor and its licensors retain all right, title, and interest in the Licensed Software and
+  Documentation. No rights are granted except as expressly stated in this Agreement and the BSL 1.1. If the
+  Customer provides feedback, the Licensor may use it without restriction or obligation.</p>
+
+  <h2>12. Confidentiality</h2>
+  <p>Each party will protect the other's non-public information disclosed under this Agreement with the same
+  care it uses for its own confidential information (and at least reasonable care), and use it only to
+  perform this Agreement. This does not apply to information that is public, independently developed, or
+  rightfully received from a third party, or to disclosures required by law.</p>
+
+  <h2>13. Data protection</h2>
+  <p>For <strong>self-hosted</strong> deployments, the Customer controls its own data and the Licensor does
+  not process the Customer's personal data as part of providing the Licensed Features; the Licensor
+  processes only the limited business-contact and billing data described in its
+  <a href="/privacy/">Privacy Policy</a>. For <strong>hosted/SaaS</strong> deployments, the parties will
+  enter the Licensor's <strong>Data Processing Addendum (DPA)</strong>, which governs processing of personal
+  data and is incorporated by reference where applicable.</p>
+
+  <h2>14. Indemnification</h2>
+  <p>14.1 <strong>By the Licensor.</strong> The Licensor will defend the Customer against a third-party
+  claim that the unmodified Licensed Software, used as permitted, infringes that third party's
+  intellectual-property rights, and will pay damages finally awarded (or settlement the Licensor approves).
+  The Licensor may, at its option, procure the right to continue use, modify the software to be
+  non-infringing, or terminate the affected subscription and refund pre-paid unused Fees. This does not
+  apply to claims arising from modifications not made by the Licensor, combination with non-Licensor
+  products, or use in breach of this Agreement. This is the Customer's sole remedy for IP infringement, and
+  is subject to the cap in §10.2.</p>
+  <p>14.2 <strong>By the Customer.</strong> The Customer will defend the Licensor against third-party claims
+  arising from the Customer's use of the Licensed Software in breach of this Agreement or applicable law.</p>
+
+  <h2>15. Compliance and export</h2>
+  <p>Each party will comply with applicable laws, including export-control and sanctions laws. The Customer
+  will not use the Licensed Software in violation of such laws.</p>
+
+  <h2>16. Governing law and disputes</h2>
+  <p>This Agreement is governed by the laws of <strong>Poland</strong>, without regard to conflict-of-law
+  rules, and the parties submit to the exclusive jurisdiction of the competent courts of
+  <strong>Poland</strong>. Mandatory consumer-protection rights in the Customer's country of residence are
+  unaffected.</p>
+
+  <h2>17. General</h2>
+  <p>17.1 <strong>Assignment.</strong> Neither party may assign this Agreement without the other's consent,
+  except to a successor in a merger or sale of substantially all assets, on notice.</p>
+  <p>17.2 <strong>Notices.</strong> Legal notices must be in writing and sent to the notices contacts in the
+  Order Form (email is sufficient).</p>
+  <p>17.3 <strong>Entire agreement; amendments.</strong> This Agreement is the entire agreement on its
+  subject matter and supersedes prior understandings. It may be amended only in a writing signed (or
+  expressly accepted at renewal) by both parties; the Licensor may update these Terms for future
+  Subscription Terms, with the version in effect at the start of each term applying to that term.</p>
+  <p>17.4 <strong>Force majeure.</strong> Neither party is liable for delay or failure due to causes beyond
+  its reasonable control.</p>
+  <p>17.5 <strong>Severability; waiver.</strong> If any provision is unenforceable, the rest remains in
+  effect. A failure to enforce is not a waiver.</p>
+  <p>17.6 <strong>Independent contractors.</strong> The parties are independent contractors; this Agreement
+  creates no partnership, agency, or employment.</p>
+
+  <hr>
+  <p class="meta">Questions about these terms: <a href="mailto:hello@hostcd.dev">hello@hostcd.dev</a>.
+  For the website and software terms generally, see <a href="/terms/">Terms of Use</a>; for privacy, see
+  the <a href="/privacy/">Privacy Policy</a>.</p>
+</div>
+</body>
+</html>
