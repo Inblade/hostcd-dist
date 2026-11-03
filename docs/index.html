@@ -229,14 +229,14 @@
 <header class="nav">
   <div class="wrap row">
     <span class="brand"><span class="dot"></span>hostcd</span>
-    <span class="status">v0.3.0 • open core</span>
+    <span class="status">Self-hosted · BSL 1.1</span>
     <nav>
       <a class="navlink" href="#why">Why hostcd</a>
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#editions">Editions</a>
       <a class="navlink" href="#faq">FAQ</a>
       <a class="navlink" href="#contact">Contact</a>
-      <a class="ghlink" href="https://github.com/Inblade/hostcd-dist"><span class="star">★</span> GitHub</a>
+      <a class="ghlink" href="https://github.com/Inblade/hostcd-dist">Downloads</a>
       <button class="iconbtn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
     </nav>
   </div>
@@ -253,7 +253,7 @@
           across VMs and bare metal — without inbound agent ports or Kubernetes.</p>
         <div class="cta">
           <a class="btn primary" href="#get-started">View installation guide</a>
-          <a class="btn ghost" href="https://github.com/Inblade/hostcd-dist">View on GitHub ↗</a>
+          <a class="btn ghost" href="https://github.com/Inblade/hostcd-dist">Downloads on GitHub ↗</a>
         </div>
         <p class="meta"><b>Self-hosted</b> · <b>Pull-based agents</b> · <b>Free for up to 10 hosts</b></p>
       </div>
@@ -463,8 +463,8 @@
     <p>Install the control plane, enroll a host, point it at a Git repo. Self-hosted and free for your first 10 hosts.</p>
     <div class="installbox" style="margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px;overflow-x:auto">
       <div class="eyebrow" style="margin-bottom:9px">Install the control plane · Linux</div>
-      <code class="mono" style="display:block;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--ink)">HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0 \
-curl -fsSL https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0/install.sh | sh -s -- server</code>
+      <code class="mono" style="display:block;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--ink)">curl -fsSL https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0/install.sh \
+  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0 sh -s -- server</code>
     </div>
     <div class="cta">
       <a class="btn primary" href="https://github.com/Inblade/hostcd-dist#readme">View installation guide ↗</a>
@@ -485,6 +485,8 @@ curl -fsSL https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0/insta
       <div class="frow">
         <label>Reason
           <select name="intent">
+            <option value="buy-team">Buy Team (€99/mo founding)</option>
+            <option value="team-license">Request or renew a Team licence</option>
             <option value="enterprise">Enterprise evaluation</option>
             <option value="trial-help">Team trial — setup help &amp; reminders</option>
             <option value="other">Other</option>
@@ -507,7 +509,7 @@ curl -fsSL https://github.com/Inblade/hostcd-dist/releases/download/v0.3.0/insta
     </form>
     <p class="meta" style="margin-top:12px">Prefer email? <a href="mailto:dkocheto@gmail.com?subject=hostcd%20enquiry">write to us directly</a>.
        Company name is never required.</p>
-    <p class="meta" style="margin-top:6px;opacity:.75">We use what you send only to reply and to help with your trial — no third-party marketing. We keep it until the conversation is over, then delete it; ask us to remove it any time.</p>
+    <p class="meta" style="margin-top:6px;opacity:.75">We use what you send only to reply and to help with your trial — no third-party marketing. We keep it until the conversation is over, then delete it; ask us to remove it any time. Submissions are handled by Formspree, our form processor.</p>
   </div>
 </section>
 </main>
