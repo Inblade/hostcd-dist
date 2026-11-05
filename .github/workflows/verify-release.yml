@@ -1,0 +1,89 @@
+name: verify-release
+
+# Public, independent verification of the latest hostcd-dist release.
+# Anyone can read these runs: it proves the published artifacts are the signed,
+# checksummed ones, without needing access to the private core CI.
+#
+# It downloads the latest (non-prerelease) release of THIS repo and checks:
+#   1. all required assets are present,
+#   2. SHA256SUMS carries valid keyless-cosign provenance from the core release
+#      workflow (same identity the installer pins),
+#   3. every listed asset matches SHA256SUMS,
+#   4. the "latest" release is a stable release, not a prerelease.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'   # Mondays 06:17 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-release
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3   # can be pinned to a commit SHA
+
+      - name: Download the latest stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # gh's "latest" pointer already excludes prereleases; re-assert it.
+          read -r tag pre < <(gh release view --repo "$GITHUB_REPOSITORY" \
+              --json tagName,isPrerelease -q '.tagName + " " + (.isPrerelease|tostring)')
+          if [ "$pre" != "false" ] || [ -z "$tag" ]; then
+            echo "::error::latest release is missing or a prerelease (tag='$tag' prerelease='$pre')"
+            exit 1
+          fi
+          echo "Verifying stable release $tag"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          mkdir -p dl
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir dl --clobber
+
+      - name: Assert required assets are present
+        run: |
+          set -euo pipefail
+          cd dl
+          required="SHA256SUMS SHA256SUMS.cosign.bundle install.sh
+                    hostcd-server-linux-amd64 hostcd-server-linux-arm64
+                    hostcd-agent-linux-amd64 hostcd-agent-linux-arm64
+                    hostcdctl-linux-amd64 hostcdctl-linux-arm64
+                    hostcd-server.service hostcd-agent.service"
+          miss=0
+          for f in $required; do
+            if [ ! -f "$f" ]; then echo "::error::missing asset $f"; miss=1; fi
+          done
+          if ! ls *.sbom.spdx.json >/dev/null 2>&1; then
+            echo "::error::missing SPDX SBOM"; miss=1
+          fi
+          [ "$miss" = 0 ] || exit 1
+          echo "all required assets present"
+
+      - name: Verify cosign provenance of SHA256SUMS
+        run: |
+          set -euo pipefail
+          cd dl
+          # Same identity the installer pins: the core repo's release workflow,
+          # keyless (Fulcio/Rekor) via the GitHub Actions OIDC issuer.
+          cosign verify-blob \
+            --bundle SHA256SUMS.cosign.bundle \
+            --certificate-identity-regexp '^https://github.com/Inblade/hostcd/\.github/workflows/release\.yml@refs/tags/v.+$' \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            SHA256SUMS
+          echo "cosign provenance OK"
+
+      - name: Verify every asset matches SHA256SUMS
+        run: |
+          set -euo pipefail
+          cd dl
+          sha256sum -c SHA256SUMS
+          echo "all checksums OK for $TAG"
