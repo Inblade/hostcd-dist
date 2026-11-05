@@ -19,6 +19,11 @@
   ul{padding-left:20px}li{margin:4px 0}
   hr{border:0;border-top:1px solid var(--line);margin:28px 0}
   .back{display:inline-block;margin-bottom:22px;color:var(--muted)}
+  table{border-collapse:collapse;width:100%;margin:10px 0 4px;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{color:var(--ink);font-weight:600;background:var(--panel)}
+  td{color:var(--muted)}
+  .legal{font-size:13px;color:var(--muted);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -26,55 +31,113 @@
   <a class="back" href="/">← hostcd.dev</a>
   <span class="eyebrow">Legal</span>
   <h1>Privacy Policy</h1>
-  <p class="meta">Last updated 3 November 2026.</p>
+  <p class="meta">Last updated 5 November 2026.</p>
 
-  <p>hostcd is an independent project operated by <strong>Danylo Kochetov, a sole operator
-  established in Poland, trading as "hostcd"</strong> ("we", "us"). This policy explains the limited
-  personal data processed when you visit <strong>hostcd.dev</strong> or contact us. We keep data
-  collection to the minimum needed to answer you and run the site.</p>
+  <p>This policy explains what personal data we process when you visit <strong>hostcd.dev</strong> or
+  contact us, why, and what rights you have. We keep data collection to the minimum needed to answer
+  you and run the site: no cookies, no analytics, no advertising, and no cross-site trackers.</p>
+
+  <h2>Who we are (the controller)</h2>
+  <p>hostcd is an independent software project operated by <strong>Danylo Kochetov</strong>, based in
+  Poland ("we", "us", "the operator"). For any privacy question, or to exercise the rights below,
+  contact <a href="mailto:hello@hostcd.dev">hello@hostcd.dev</a>. We have not appointed a Data
+  Protection Officer, as the scale of our processing does not require one.</p>
 
   <h2>What we collect</h2>
   <ul>
-    <li><strong>Contact form.</strong> If you use the form, the fields you enter are sent to us so
-      we can reply: the reason you select, your email address, and — optionally — how many hosts you
-      run, which features matter to you, and a free-text message. Only the email is required; the
-      form does not ask for your name.</li>
+    <li><strong>Contact form.</strong> The fields you enter so we can reply: the reason you select,
+      your email address, and — optionally — how many hosts you run, which features matter to you,
+      and a free-text message. Only the email is required; the form does not ask for your name.</li>
     <li><strong>Email.</strong> If you write to <a href="mailto:hello@hostcd.dev">hello@hostcd.dev</a>
       or <a href="mailto:security@hostcd.dev">security@hostcd.dev</a>, we receive your message and
       address.</li>
-    <li><strong>Technical logs.</strong> Our hosting and network providers process standard
-      request metadata (such as IP address and user-agent) to serve the site and protect it from
-      abuse. We do not use cookies, analytics, advertising, or cross-site trackers on this site.</li>
+    <li><strong>Technical logs.</strong> Our hosting and network providers process standard request
+      metadata (such as IP address and user-agent) to serve the site and protect it from abuse.</li>
+    <li><strong>Billing records.</strong> If you buy a licence, we process the details needed to
+      issue and keep the invoice (payment itself is handled by the payment provider, not by this
+      website).</li>
   </ul>
+  <p class="meta">The only thing stored in your browser is a theme preference (light/dark) kept in
+  <code>localStorage</code>. It stays on your device, is never sent to us, and is strictly necessary
+  for the feature you asked for, so it does not require consent.</p>
 
-  <h2>Who processes it (sub-processors)</h2>
+  <h2>Why, and on what legal basis</h2>
+  <p>Where the GDPR applies, we rely on the following bases (Article 6(1)):</p>
+  <table>
+    <thead><tr><th>Purpose</th><th>Data</th><th>Legal basis</th></tr></thead>
+    <tbody>
+      <tr><td>Replying to a general enquiry</td><td>email, message</td><td class="legal">legitimate interest — (f)</td></tr>
+      <tr><td>Handling a trial, licence or pricing request</td><td>email, fleet details you share</td><td class="legal">steps prior to a contract — (b)</td></tr>
+      <tr><td>Serving and securing the website</td><td>IP address, user-agent</td><td class="legal">legitimate interest — (f)</td></tr>
+      <tr><td>Keeping invoices and tax records after a purchase</td><td>billing details</td><td class="legal">legal obligation — (c)</td></tr>
+    </tbody>
+  </table>
+  <p class="meta">Our legitimate interest is to answer the people who contact us and to keep the site
+  available and free from abuse. You can object to processing based on legitimate interest at any
+  time (see your rights below). We do not rely on consent for the contact form, so there is nothing
+  to "withdraw"; if we ever ask for consent for something specific, you will be able to withdraw it
+  just as easily as you gave it.</p>
+
+  <h2>Who processes your data</h2>
+  <p>We use a small number of providers that process data on our behalf or as part of delivering the
+  site:</p>
   <ul>
-    <li><strong>Formspree</strong> — delivers contact-form submissions to us.
-      (<a href="https://formspree.io/legal/privacy-policy/">privacy policy</a>)</li>
-    <li><strong>GitHub (GitHub Pages)</strong> — hosts and serves this website.
+    <li><strong>Formspree</strong> (US) — receives and delivers contact-form submissions to us. Acts
+      as our processor. (<a href="https://formspree.io/legal/privacy-policy/">privacy policy</a>)</li>
+    <li><strong>GitHub Pages</strong> — GitHub, Inc. (US) hosts and serves this website.
       (<a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">privacy statement</a>)</li>
-    <li><strong>Cloudflare</strong> — DNS and email routing for the domain (not the website host).
-      (<a href="https://www.cloudflare.com/privacypolicy/">privacy policy</a>)</li>
-    <li><strong>Google Fonts</strong> — serves the webfonts used on the site; your browser requests
-      them from Google, which receives your IP address for that purpose.
-      (<a href="https://policies.google.com/privacy">privacy policy</a>)</li>
+    <li><strong>Cloudflare, Inc.</strong> (US) — DNS and email routing for the domain (not the
+      website host). (<a href="https://www.cloudflare.com/privacypolicy/">privacy policy</a>)</li>
   </ul>
-  <p>Email you send is forwarded to the maintainer's mailbox for handling your request.</p>
+  <p>We do not sell personal data, and we do not share it with anyone else except where we must to
+  comply with the law.</p>
 
-  <h2>Why, and on what basis</h2>
-  <p>We process this data to respond to your enquiry, provide and secure the website, and — where
-  relevant — to discuss or provide the hostcd software and licences. Where the GDPR applies, the
-  legal bases are your consent (for optional contact), our legitimate interest in operating a
-  secure site, and taking steps at your request prior to any agreement.</p>
+  <h2>International transfers</h2>
+  <p>The providers above are based in the United States, so processing your data involves a transfer
+  outside the EEA. Each transfer is covered by an appropriate GDPR safeguard:</p>
+  <ul>
+    <li><strong>GitHub, Inc.</strong> — certified under the EU–U.S. Data Privacy Framework; its Data
+      Processing Agreement also incorporates the EU Standard Contractual Clauses.</li>
+    <li><strong>Cloudflare, Inc.</strong> — certified under the EU–U.S. Data Privacy Framework, with
+      the EU Standard Contractual Clauses included in its Data Processing Addendum as an additional
+      basis.</li>
+    <li><strong>Formspree</strong> — transfers are governed by the EU Standard Contractual Clauses in
+      its Data Processing Agreement.</li>
+  </ul>
+  <p>You can ask us for more detail about these safeguards at
+  <a href="mailto:hello@hostcd.dev">hello@hostcd.dev</a>.</p>
 
-  <h2>Retention</h2>
-  <p>We keep what you send only to reply to and help with your request; once that is handled we
-  delete it, and you can ask us to remove it at any time.</p>
+  <h2>How long we keep it</h2>
+  <ul>
+    <li><strong>Enquiries that don't lead to an agreement</strong> — up to 12 months after our last
+      exchange, then deleted.</li>
+    <li><strong>Security reports</strong> — for the duration of the investigation plus a reasonable
+      period after it closes.</li>
+    <li><strong>Technical logs</strong> — kept by our hosting and network providers for their own
+      standard periods (typically days to a few weeks); we do not maintain a separate copy.</li>
+    <li><strong>Invoices and tax records</strong> — for as long as Polish tax law requires (generally
+      up to five years from the end of the relevant tax year).</li>
+    <li><strong>Anything needed for a legal claim</strong> — until the relevant limitation period
+      ends.</li>
+  </ul>
+  <p>You can ask us to delete your data sooner at any time, subject to the retention we are legally
+  required to keep.</p>
 
   <h2>Your rights</h2>
-  <p>You can ask us to access, correct, or delete the personal data we hold about you, or to stop
-  contacting you. Email <a href="mailto:hello@hostcd.dev">hello@hostcd.dev</a>. We do not sell
-  personal data.</p>
+  <p>Under the GDPR you have the right to:</p>
+  <ul>
+    <li>access the personal data we hold about you;</li>
+    <li>have inaccurate data corrected;</li>
+    <li>have your data erased;</li>
+    <li>restrict how we process it;</li>
+    <li>object to processing based on our legitimate interest;</li>
+    <li>data portability, where it applies;</li>
+    <li>withdraw consent, where we rely on it.</li>
+  </ul>
+  <p>To exercise any of these, email <a href="mailto:hello@hostcd.dev">hello@hostcd.dev</a>. You also
+  have the right to lodge a complaint with the Polish supervisory authority, the President of the
+  Personal Data Protection Office (UODO):
+  <a href="https://uodo.gov.pl/en" rel="noopener">uodo.gov.pl/en</a>.</p>
 
   <h2>Changes</h2>
   <p>We may update this policy; the "last updated" date above will change. Material changes will be
