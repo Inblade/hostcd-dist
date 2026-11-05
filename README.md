@@ -7,7 +7,7 @@ Kubernetes. The Community core is licensed under the Business Source License 1.1
 (it converts to Apache-2.0 on its change date); the **source repository will be
 published before GA**.
 
-- **Landing page:** https://inblade.github.io/hostcd-dist/
+- **Landing page:** https://hostcd.dev
 - **Releases (binaries, `install.sh`, `SHA256SUMS`, cosign bundle, SBOM):** see the
   [Releases](https://github.com/Inblade/hostcd-dist/releases) tab.
 
