@@ -1,0 +1,21 @@
+# hostcd
+
+> hostcd keeps every Linux server aligned with Git — continuous drift detection, self-healing, and safe, previewed rollouts for VMs and bare metal, without Kubernetes and without any inbound connection to the managed hosts. The technical analogy is "Argo CD for plain hosts".
+
+An application points at a folder in Git and at a set of hosts (by name or label). The control plane renders that folder per host, shows drift as a diff, and applies, rolls back, or prunes on command or automatically. Each host runs a small agent that only dials out over HTTPS, so nothing listens on a managed host. Community (free, BSL 1.1) is the full core; Team adds approval gates, notifications and audit export; Enterprise adds SSO, SCIM, Postgres HA and Vault sealing.
+
+The pages below are plain Markdown, written to be read directly by an assistant helping someone operate hostcd.
+
+## Docs
+
+- [Overview](https://hostcd.dev/guide/overview.md): what hostcd is, who it is for, how pull-based reconciliation works, and the editions.
+- [Install](https://hostcd.dev/guide/install.md): install the control plane and enrol hosts, verify a download with cosign, and air-gapped mirrors.
+- [Concepts](https://hostcd.dev/guide/concepts.md): applications, resource kinds, sync/drift/self-heal, hosts and the fleet, projects and approval gates, notifications, and audit.
+- [Security](https://hostcd.dev/guide/security.md): trust boundaries, control-plane auth, secrets, supply chain, and the fail-closed self-updater.
+- [Operations](https://hostcd.dev/guide/operations.md): upgrades, one-click self-update, backup/restore, high availability, metrics, and the shape of a typical change.
+
+## Optional
+
+- [Full docs as one file](https://hostcd.dev/llms-full.txt): every guide page above concatenated into one Markdown document for one-shot ingestion.
+- [Install script](https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh): the signed installer referenced throughout the docs.
+- [Source repository README](https://github.com/Inblade/hostcd): project scope, stability tiers, and the reliability drill.
