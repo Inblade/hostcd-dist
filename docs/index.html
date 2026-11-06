@@ -339,12 +339,29 @@
     </button>
   </div>
   <p class="meta" style="text-align:center;margin-top:10px">75-second product demo · <a href="#get-started" data-track="demo-install">install it yourself ↗</a></p>
+  <details style="max-width:760px;margin:6px auto 0">
+    <summary class="meta" style="cursor:pointer;text-align:center">Transcript</summary>
+    <p class="meta" style="margin-top:10px">hostcd is GitOps for Linux servers outside Kubernetes. One screen shows whether every application is synced, out of sync, healthy, or degraded. Open an application to see the exact package, file, and service state on every targeted host. Here, a manual edit on web-2 created drift. hostcd detects it and shows the exact line that differs from Git. Before applying, the operator chooses hosts and resources, can run a dry run, and synchronizes only what is intended. A failed PostgreSQL service marks the resource, host, and whole application as degraded. hostcd provides continuous drift detection, controlled reconciliation, rollback, and audit for ordinary Linux fleets without Kubernetes.</p>
+  </details>
 </section>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "hostcd demo — GitOps for Linux hosts without Kubernetes",
+  "description": "A product demo of hostcd: continuous drift detection, previewed changes, controlled reconciliation, rollback and audit for Linux hosts — without Kubernetes and without inbound SSH.",
+  "thumbnailUrl": "https://hostcd.dev/demo-poster.jpg",
+  "uploadDate": "2026-11-06",
+  "duration": "PT1M3S",
+  "contentUrl": "https://youtu.be/2KfvtO7b4jE",
+  "embedUrl": "https://www.youtube.com/embed/2KfvtO7b4jE"
+}
+</script>
 <script>
 (function(){
   // Publish the demo: set YT_ID to the YouTube id and POSTER to a 16:9 still.
-  var YT_ID = "";               // e.g. "AbCdEf12345" — empty keeps the block hidden
-  var POSTER = "/ui-dark.png";  // replace with a dedicated 16:9 poster when available
+  var YT_ID = "2KfvtO7b4jE";       // the 75-sec product demo on YouTube
+  var POSTER = "/demo-poster.jpg"; // 16:9 still from the demo
   if (!YT_ID) return;
   var sec = document.getElementById("demo-video"), btn = document.getElementById("watch-demo");
   var poster = document.getElementById("demo-poster");
