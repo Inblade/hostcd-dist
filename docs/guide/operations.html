@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations · hostcd docs</title>
+<meta name="description" content="Upgrades, one-click self-update, backup/restore, high availability, metrics, and a typical change.">
+<link rel="canonical" href="https://hostcd.dev/guide/operations.html">
+<link rel="alternate" type="text/markdown" href="/guide/operations.md">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
+     Replace __CF_BEACON_TOKEN__ with the token from the Cloudflare dashboard
+     (Analytics & Logs → Web Analytics). Until then this loads nothing useful but is harmless. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a class="mono" href="/llms.txt">llms.txt</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">Documentation</div>
+    <nav class="sidenav"><a href="/guide/overview.html">Overview</a><a href="/guide/install.html">Install</a><a href="/guide/concepts.html">Concepts</a><a href="/guide/security.html">Security</a><a href="/guide/operations.html" class="active">Operations</a></nav>
+    <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
+  </aside>
+  <main class="content">
+<h1>hostcd — operations (day two)</h1>
+<h2>Upgrades</h2>
+<p>hostcd upgrades server-first: upgrade <code>hostcd-server</code>, then the agents. The protocol is version-compatible across a release, so a newer server speaks to older agents during a rollout. Re-running the installer swaps the binary and restarts the unit.</p>
+<p>Upgrade an agent by re-running the agent install (or swapping the verified binary and <code>systemctl restart hostcd-agent</code>); the token in <code>/etc/hostcd/agent.env</code> is preserved, so there is no re-enrolment.</p>
+<h2>One-click self-update (opt-in)</h2>
+<p>Because the server runs unprivileged it cannot replace its own binary, so one-click update is <strong>off by default</strong>. Enable it at install time with <code>HOSTCD_SELF_UPDATE=1</code> (cosign must be installed on the host — it is mandatory for the unattended root updater). This adds:</p>
+<ul>
+<li>a root <code>hostcd-update.service</code> oneshot that re-runs the signed installer;</li>
+<li>a root <code>hostcd-update.path</code> unit that starts it when the server writes a trigger file;</li>
+<li><code>HOSTCD_UPDATE_COMMAND</code> in <code>server.env</code>.</li>
+</ul>
+<p>With it enabled, the UI shows the running version in the sidebar, a <strong>What's new</strong> panel with the release notes, and an <strong>Update now</strong> button. Clicking it pins the latest tag, verifies the installer's cosign provenance and checksum, swaps the binary, and restarts — the UI waits and reloads on the new version. The manual install command stays available either way.</p>
+<h2>Backup and restore</h2>
+<p>The <strong>Backup</strong> screen exports the full server state (applications, hosts, projects, users, settings) to a file, and restores from one. Keep a periodic export; the Recovery screen shows when the last export ran.</p>
+<h2>High availability (Enterprise)</h2>
+<p>With the Postgres backend, run multiple servers: reads are served anywhere and writes go through an elected leader (writes from a standby are forwarded). The Recovery screen shows HA and leadership status.</p>
+<h2>Metrics</h2>
+<p><code>/metrics</code> exposes Prometheus metrics (host online/offline counts, app sync state, and more). On an untrusted network protect it with <code>-metrics-token</code>; the Security screen flags when it is open.</p>
+<h2>A typical change</h2>
+<ol>
+<li>Commit a manifest change to the app's Git folder and push.</li>
+<li>hostcd shows the app <strong>Out of sync</strong> with a diff (the preview).</li>
+<li>For a gated (approval-required) app, one admin requests the sync and a different admin approves; otherwise it applies on sync or automatically.</li>
+<li>The rollout runs host by host; the result is recorded in history and sent to any webhook and audit sink.</li>
+<li>If something is wrong, <strong>roll back</strong> to the previous revision from the UI.</li>
+</ol>
+<p>Next: <a href="overview.md">overview</a> · <a href="concepts.md">concepts</a> · <a href="security.md">security</a>.</p>
+
+    <hr>
+    <p class="muted">This page is also available as <a href="/guide/operations.md" data-track="md-source">Markdown</a>, indexed in <a href="/llms.txt" data-track="llms">llms.txt</a> for AI assistants.</p>
+  </main>
+</div>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="https://github.com/Inblade/hostcd-dist" data-track="github">GitHub</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md" data-track="security">Security</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/LICENSE">BSL 1.1</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>

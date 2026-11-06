@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concepts · hostcd docs</title>
+<meta name="description" content="Applications, resource kinds, sync/drift/self-heal, hosts and the fleet, projects and approval gates, notifications, and audit.">
+<link rel="canonical" href="https://hostcd.dev/guide/concepts.html">
+<link rel="alternate" type="text/markdown" href="/guide/concepts.md">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
+     Replace __CF_BEACON_TOKEN__ with the token from the Cloudflare dashboard
+     (Analytics & Logs → Web Analytics). Until then this loads nothing useful but is harmless. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a class="mono" href="/llms.txt">llms.txt</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">Documentation</div>
+    <nav class="sidenav"><a href="/guide/overview.html">Overview</a><a href="/guide/install.html">Install</a><a href="/guide/concepts.html" class="active">Concepts</a><a href="/guide/security.html">Security</a><a href="/guide/operations.html">Operations</a></nav>
+    <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
+  </aside>
+  <main class="content">
+<h1>hostcd — core concepts</h1>
+<h2>Application</h2>
+<p>An <strong>application</strong> is the unit of reconciliation. It has:</p>
+<ul>
+<li>a <strong>source</strong>: a Git repo URL, a branch (<code>targetRevision</code>), and a path (folder) inside it;</li>
+<li>a <strong>destination</strong>: the hosts it targets, by name or by label selector (e.g. <code>role=web, env=prod</code>);</li>
+<li>a <strong>sync policy</strong>: <code>automated</code> (apply automatically) and <code>selfHeal</code> (revert manual changes) and <code>prune</code> (remove resources dropped from Git).</li>
+</ul>
+<p>The folder contains manifests describing desired system state. hostcd renders them per host and reconciles.</p>
+<h2>Resource kinds</h2>
+<p>A manifest declares resources. The system kinds include <strong>packages</strong>, <strong>files</strong> (static or Go-templated), <strong>services</strong>, <strong>users</strong>, <strong>groups</strong>, <strong>directories</strong>, <strong>symlinks</strong>, <strong>cron jobs</strong>, <strong>sysctl</strong> settings, <strong>mounts</strong>, <strong>apt repositories</strong>, and <strong>ufw rules</strong>. Templated files use host facts (<code>.Hostname</code>, <code>.OSID</code>, <code>.OSVersion</code>, <code>.OSFamily</code>) and labels (<code>.Labels.&lt;key&gt;</code>), and a <code>notify:</code> on a file restarts a service when the file changes.</p>
+<p><img src="../screenshots/app-resource-tree.jpg" alt="hostcd application detail for nginx showing an Out-of-sync status and a resource tree that expands the app into three hosts, each with its nginx package, config files (one marked content-differs), and the nginx service, with Sync, Refresh, Pending changes and History/rollback actions"></p>
+<h2>Sync, drift, and self-heal</h2>
+<ul>
+<li><strong>Drift</strong> is any difference between the rendered desired state and what is on a host. hostcd surfaces it as <strong>Out of sync</strong> with a per-resource diff — the <em>preview</em>.</li>
+<li><strong>Sync</strong> applies the desired state. It can be manual (an explicit operation) or <strong>automated</strong>.</li>
+<li><strong>Self-heal</strong> re-applies desired state when a host drifts (e.g. someone edits a managed file by hand), so the host returns to what Git says.</li>
+</ul>
+<p>Every sync is recorded in <strong>history</strong>, and any past revision can be restored with <strong>rollback</strong> (automated sync is disabled during a rollback so it is not immediately re-applied).</p>
+<h2>Hosts and the fleet</h2>
+<p>A <strong>host</strong> is a machine running the agent. Hosts carry <strong>labels</strong> that application selectors match on. The <strong>Fleet</strong> view summarises hosts, applications, and what needs attention; the <strong>Hosts</strong> view lists every host with its labels, targeting apps, sync/health, agent version, and last check-in. A host is considered offline after it stops reporting for 90 seconds.</p>
+<h2>Projects and approval gates (Team)</h2>
+<p>A <strong>project</strong> is a guard rail around a set of applications: it can restrict which source repos and destinations are allowed, define sync windows, and <strong>require approval</strong>. When a project requires approval, a sync (or rollback) of its apps is <strong>not</strong> applied automatically — it becomes a pending request that a <em>different</em> admin must approve. This gives a two-person rule for production changes; drift is still shown while a change waits.</p>
+<h2>Notifications (Team)</h2>
+<p>hostcd can POST events to <strong>webhooks</strong> (JSON, or a Slack-shaped body), optionally signed with an HMAC secret and filtered by event type. Events include <code>app-sync-failed</code> / <code>app-sync-succeeded</code>, <code>host-offline</code> / <code>host-online</code>, <code>app-pending-approval</code>, and the cluster/app-set equivalents. Delivery fires on a change to a noteworthy terminal state, so a long deploy does not flap.</p>
+<h2>Audit (Team)</h2>
+<p>Every operator action is recorded in an in-memory <strong>audit</strong> trail (the server log keeps a durable copy). The <strong>audit sink</strong> ships those events to an HTTP endpoint with retry and a <strong>persisted delivery cursor</strong>, so after a server restart delivery resumes exactly where it left off — no re-sends and no gaps.</p>
+<p>Next: <a href="install.md">install</a> · <a href="operations.md">operations</a> · <a href="security.md">security</a>.</p>
+
+    <hr>
+    <p class="muted">This page is also available as <a href="/guide/concepts.md" data-track="md-source">Markdown</a>, indexed in <a href="/llms.txt" data-track="llms">llms.txt</a> for AI assistants.</p>
+  </main>
+</div>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="https://github.com/Inblade/hostcd-dist" data-track="github">GitHub</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md" data-track="security">Security</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/LICENSE">BSL 1.1</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>

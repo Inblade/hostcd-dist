@@ -236,6 +236,10 @@
 
   @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+<!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
+     Replace __CF_BEACON_TOKEN__ with the token from the Cloudflare dashboard
+     (Analytics & Logs → Web Analytics → this site). See the Privacy Policy. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
 </head>
 <body>
 
@@ -248,7 +252,7 @@
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#editions">Editions</a>
       <a class="navlink" href="#faq">FAQ</a>
-      <a class="navlink" href="/guide/overview.md">Docs</a>
+      <a class="navlink" href="/guide/overview.html">Docs</a>
       <a class="navlink" href="#contact">Contact</a>
       <a class="ghlink" href="https://github.com/Inblade/hostcd-dist">Downloads</a>
       <button class="iconbtn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
@@ -535,7 +539,7 @@
     <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
     <span>Your Linux fleet, reconciled to Git.</span>
     <span>
-      <a href="/guide/overview.md">Docs</a> ·
+      <a href="/guide/overview.html">Docs</a> ·
       <a href="/llms.txt">llms.txt</a> ·
       <a href="https://github.com/Inblade/hostcd-dist">GitHub</a> ·
       <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md">Security</a> ·
@@ -578,5 +582,7 @@
     tick();
   })();
 </script>
+<!-- cookieless outbound-link click tracking (Cloudflare Zaraz if enabled; no-op otherwise) -->
+<script src="/assets/track.js" defer></script>
 </body>
 </html>
