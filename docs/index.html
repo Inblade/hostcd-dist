@@ -328,17 +328,17 @@
   </div>
 </section>
 
-<!-- 75-second product demo. Hidden until the video is published: set YT_ID below
+<!-- 63-second product demo. Hidden until the video is published: set YT_ID below
      to the YouTube id (and swap POSTER for a 16:9 still). The player loads only on
      click, via youtube-nocookie, so nothing third-party loads until the visitor asks. -->
 <section id="demo-video" class="wrap" style="max-width:900px;margin:10px auto 0;padding:0 20px" hidden>
   <div style="position:relative;aspect-ratio:16/9;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface-2)">
-    <img id="demo-poster" src="/ui-dark.png" alt="hostcd 75-second product demo: drift detected on a host, previewed as a diff, synced from Git, then self-healed" style="width:100%;height:100%;object-fit:cover;display:block">
-    <button id="demo-play" aria-label="Play the 75-second hostcd demo" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);border:none;cursor:pointer">
+    <img id="demo-poster" src="/ui-dark.png" alt="hostcd 63-second product demo: drift detected on a host, previewed as a diff, synced from Git, then self-healed" style="width:100%;height:100%;object-fit:cover;display:block">
+    <button id="demo-play" aria-label="Play the 63-second hostcd demo" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);border:none;cursor:pointer">
       <span style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:26px;box-shadow:0 10px 30px -8px var(--glow)">▶</span>
     </button>
   </div>
-  <p class="meta" style="text-align:center;margin-top:10px">75-second product demo · <a href="#get-started" data-track="demo-install">install it yourself ↗</a></p>
+  <p class="meta" style="text-align:center;margin-top:10px">63-second product demo · <a href="#get-started" data-track="demo-install">install it yourself ↗</a></p>
   <details style="max-width:760px;margin:6px auto 0">
     <summary class="meta" style="cursor:pointer;text-align:center">Transcript</summary>
     <p class="meta" style="margin-top:10px">hostcd is GitOps for Linux servers outside Kubernetes. One screen shows whether every application is synced, out of sync, healthy, or degraded. Open an application to see the exact package, file, and service state on every targeted host. Here, a manual edit on web-2 created drift. hostcd detects it and shows the exact line that differs from Git. Before applying, the operator chooses hosts and resources, can run a dry run, and synchronizes only what is intended. A failed PostgreSQL service marks the resource, host, and whole application as degraded. hostcd provides continuous drift detection, controlled reconciliation, rollback, and audit for ordinary Linux fleets without Kubernetes.</p>
@@ -581,6 +581,11 @@
       <h3 style="margin:0 0 8px">Seven failures, four real hosts</h3>
       <p class="muted" style="margin:0 0 12px">Control-plane crash, corrupted state, agent failure, network partition, reboot and real drift recovery — tested live on four real hosts.</p>
       <span style="color:var(--accent);font-weight:600">Read the reliability report →</span>
+    </a>
+    <a href="https://medium.com/@dkocheto/i-broke-my-gitops-control-plane-on-purpose-heres-what-survived-40d11e9171cf" data-track="resource-broke" style="display:block;border:1px solid var(--line);border-radius:14px;padding:20px 22px;background:var(--surface);text-decoration:none;color:inherit">
+      <h3 style="margin:0 0 8px">I broke it on purpose</h3>
+      <p class="muted" style="margin:0 0 12px">The long read behind the reliability report: how each failure was injected into a live GitOps control plane, and what survived.</p>
+      <span style="color:var(--accent);font-weight:600">Read on Medium ↗</span>
     </a>
   </div>
 </section>
