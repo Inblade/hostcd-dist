@@ -69,6 +69,9 @@ packages / files / services / users / sysctls / …</code></pre>
   <h2>The honest framing</h2>
   <blockquote>hostcd does not need to replace all of Ansible. Keep Ansible for provisioning and one-off orchestration; use hostcd where you need continuous convergence and visible drift.</blockquote>
 
+  <h2>Validated on a real host</h2>
+  <p>This is not only a diagram. The migration was run end to end on a real Ubuntu host. A scheduled Ansible playbook (<code>ansible-core 2.16</code>, from a 5-minute cron) managed a package and a config file; the same scope was translated to a hostcd manifest and the cron disabled; hostcd reported <strong>Synced / Healthy</strong> and took ownership of both resources. Then the config file was edited by hand — the kind of drift that sits unnoticed between cron runs — and hostcd <strong>self-healed it in about 12 seconds</strong>, back to the state declared in Git. The cron would have reverted it only at the next run, up to five minutes later, and would have shown no <em>OutOfSync</em> status in between.</p>
+
   <hr>
   <p><strong>Running Ansible from cron?</strong> Keep your playbooks for provisioning, and move continuously-managed state to hostcd. <a href="/guide/install.html" data-track="cta-install">Install the control plane →</a> · <a href="/guide/concepts.html">read the concepts</a> · free for up to 10 hosts.</p>
 </main>
