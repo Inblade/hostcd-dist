@@ -1,0 +1,234 @@
+# hostcd — full documentation
+
+> This file concatenates the hostcd guide pages into one Markdown document for direct ingestion by an assistant. Canonical index: https://hostcd.dev/llms.txt
+
+---
+
+# hostcd — overview
+
+> hostcd keeps every Linux server aligned with Git: continuous drift detection, self-healing, and safe, previewed rollouts for VMs and bare metal — without Kubernetes and without any inbound connection to the managed hosts.
+
+## What it is
+
+An **application** in hostcd points at a folder in a Git repository and at a set of hosts (by name or by label). The control plane (`hostcd-server`) renders that folder per host, compares the result to what is actually on the host, and shows any difference as a diff. You then **sync** (apply), **roll back**, or **prune** from a web UI or API. Each host runs a small **agent** that only dials out over HTTPS, so nothing listens on a managed host.
+
+The technical analogy is "Argo CD for plain hosts", but the job is narrower and concrete: your Linux fleet continuously reconciled against a Git repo, the way Argo CD reconciles a Kubernetes cluster.
+
+![hostcd Applications screen listing five applications with their git path, sync status, health, and synced-host count, with a folder tree in the sidebar](https://hostcd.dev/screenshots/applications.jpg)
+
+## Who it is for
+
+Teams that have outgrown running Ansible by hand or on cron, but do not want to adopt Puppet/Rudder, move to NixOS, or pull ordinary servers into Kubernetes just to get GitOps. It targets **small-to-medium Linux fleets** (Ubuntu/Debian and RHEL/Rocky are the supported families).
+
+## How it works
+
+```
+                 git (GitLab / GitHub / Gitea)
+                            │  fetch, webhook
+                ┌───────────▼───────────┐
+                │     hostcd-server     │  UI + API, renders manifests per host,
+                │   (one per fleet)     │  sync operations, history, rollback
+                └───────────▲───────────┘
+          long-poll HTTPS   │   (hosts only dial out, nothing listens on them)
+        ┌──────────────┬────┴─────────┬──────────────┐
+   hostcd-agent   hostcd-agent   hostcd-agent   hostcd-agent
+     web-1          web-2           db-1          stg-web-1
+```
+
+- **Pull, not push.** Agents long-poll the server; the server never connects into a host. No inbound SSH or open agent port is required.
+- **Per-host rendering.** A single application folder renders differently per host using host facts (hostname, OS id/version/family) and labels, so one manifest serves a heterogeneous fleet.
+- **Preview before apply.** Drift is shown as a diff first; applying is an explicit operation (or automated per app), with full history and one-click rollback.
+
+![hostcd Fleet overview with summary tiles for hosts, clusters, applications and cluster-apps, and a "Needs attention" list](https://hostcd.dev/screenshots/fleet-overview.jpg)
+
+## Editions
+
+| Edition | What you get |
+|---|---|
+| **Community** (free, BSL 1.1) | The full core: git → preview → rollout → audit, pull agent, all system resource kinds, drift/self-heal, backup/restore, upgrade/rollback. |
+| **Team** (licensed) | Approval gates, outbound notifications (webhooks), audit export, a raised host limit. |
+| **Enterprise** (licensed) | SSO (SAML/OIDC), SCIM, Postgres-backed HA, Vault Transit secret sealing. |
+
+The supported release ships the **core only**. See [concepts](concepts.md) for the model, [install](install.md) to set it up, [security](security.md) for the trust model, and [operations](operations.md) for day-two tasks.
+
+---
+
+# hostcd — install
+
+hostcd is two binaries managed by systemd: `hostcd-server` (one per fleet) and `hostcd-agent` (one per managed host). Linux with systemd is required. The supported host families are Ubuntu/Debian and RHEL/Rocky.
+
+## Install the control plane
+
+Run on the machine that will be your control plane (needs root for the systemd unit):
+
+```sh
+curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
+  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download \
+    sh -s -- server
+```
+
+The installer downloads the signed binary, **verifies it** against the release `SHA256SUMS` (and cosign provenance when cosign is installed), installs the `hostcd-server` systemd unit, and generates `/etc/hostcd/server.env` with a random admin password and a shared agent-enrolment token. By default the server listens on `127.0.0.1:8080` — put TLS or a reverse proxy in front, or pass `-tls-cert`/`-tls-key`, before exposing it.
+
+Open the UI and sign in as `admin` with the generated password (read it from `/etc/hostcd/server.env`).
+
+## Enrol a host
+
+The simplest path is **Add host → Install over SSH** from the UI: the server installs the agent over SSH and mints a per-host token automatically. To install by hand on the host instead:
+
+```sh
+curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
+  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download \
+    sh -s -- agent https://<control-plane-host>:8080 <TOKEN>
+```
+
+The agent writes its token to `/etc/hostcd/agent.env`, starts dialing out, and appears in **Hosts** within seconds.
+
+![hostcd Hosts screen showing managed hosts with labels, targeting applications, per-host sync and health, agent version, and last check-in](https://hostcd.dev/screenshots/hosts.jpg)
+
+## Verify a download yourself
+
+Every release publishes `SHA256SUMS` and a keyless cosign bundle. To check an artifact before trusting it:
+
+```sh
+cosign verify-blob SHA256SUMS \
+  --bundle SHA256SUMS.cosign.bundle \
+  --certificate-identity-regexp '^https://github.com/Inblade/hostcd/\.github/workflows/release\.yml@refs/tags/v.+$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+sha256sum -c SHA256SUMS
+```
+
+The public mirror is not re-signed, so the cosign identity stays the source repository's release workflow regardless of which mirror you downloaded from.
+
+## Air-gapped / private mirror
+
+Point `HOSTCD_RELEASE_BASE` at your own mirror (it may be plain HTTP on a trusted network). Pin the manifest out of band with `HOSTCD_EXPECTED_SHA256SUMS_SHA256=<sha256 of SHA256SUMS>` so the installer fails closed if the mirror is wrong or tampered.
+
+Next: [concepts](concepts.md) · [operations](operations.md) · [security](security.md).
+
+---
+
+# hostcd — core concepts
+
+## Application
+
+An **application** is the unit of reconciliation. It has:
+
+- a **source**: a Git repo URL, a branch (`targetRevision`), and a path (folder) inside it;
+- a **destination**: the hosts it targets, by name or by label selector (e.g. `role=web, env=prod`);
+- a **sync policy**: `automated` (apply automatically) and `selfHeal` (revert manual changes) and `prune` (remove resources dropped from Git).
+
+The folder contains manifests describing desired system state. hostcd renders them per host and reconciles.
+
+## Resource kinds
+
+A manifest declares resources. The system kinds include **packages**, **files** (static or Go-templated), **services**, **users**, **groups**, **directories**, **symlinks**, **cron jobs**, **sysctl** settings, **mounts**, **apt repositories**, and **ufw rules**. Templated files use host facts (`.Hostname`, `.OSID`, `.OSVersion`, `.OSFamily`) and labels (`.Labels.<key>`), and a `notify:` on a file restarts a service when the file changes.
+
+![hostcd application detail for nginx showing an Out-of-sync status and a resource tree that expands the app into three hosts, each with its nginx package, config files (one marked content-differs), and the nginx service, with Sync, Refresh, Pending changes and History/rollback actions](https://hostcd.dev/screenshots/app-resource-tree.jpg)
+
+## Sync, drift, and self-heal
+
+- **Drift** is any difference between the rendered desired state and what is on a host. hostcd surfaces it as **Out of sync** with a per-resource diff — the *preview*.
+- **Sync** applies the desired state. It can be manual (an explicit operation) or **automated**.
+- **Self-heal** re-applies desired state when a host drifts (e.g. someone edits a managed file by hand), so the host returns to what Git says.
+
+Every sync is recorded in **history**, and any past revision can be restored with **rollback** (automated sync is disabled during a rollback so it is not immediately re-applied).
+
+## Hosts and the fleet
+
+A **host** is a machine running the agent. Hosts carry **labels** that application selectors match on. The **Fleet** view summarises hosts, applications, and what needs attention; the **Hosts** view lists every host with its labels, targeting apps, sync/health, agent version, and last check-in. A host is considered offline after it stops reporting for 90 seconds.
+
+## Projects and approval gates (Team)
+
+A **project** is a guard rail around a set of applications: it can restrict which source repos and destinations are allowed, define sync windows, and **require approval**. When a project requires approval, a sync (or rollback) of its apps is **not** applied automatically — it becomes a pending request that a *different* admin must approve. This gives a two-person rule for production changes; drift is still shown while a change waits.
+
+## Notifications (Team)
+
+hostcd can POST events to **webhooks** (JSON, or a Slack-shaped body), optionally signed with an HMAC secret and filtered by event type. Events include `app-sync-failed` / `app-sync-succeeded`, `host-offline` / `host-online`, `app-pending-approval`, and the cluster/app-set equivalents. Delivery fires on a change to a noteworthy terminal state, so a long deploy does not flap.
+
+## Audit (Team)
+
+Every operator action is recorded in an in-memory **audit** trail (the server log keeps a durable copy). The **audit sink** ships those events to an HTTP endpoint with retry and a **persisted delivery cursor**, so after a server restart delivery resumes exactly where it left off — no re-sends and no gaps.
+
+Next: [install](install.md) · [operations](operations.md) · [security](security.md).
+
+---
+
+# hostcd — security model
+
+hostcd is built so that managing a fleet does not widen its attack surface. The full policy and threat model live in the source repository's `SECURITY.md`; this is the operator-facing summary.
+
+## Trust boundaries
+
+- **Hosts only dial out.** The agent long-polls the server over HTTPS. Nothing listens on a managed host — there is no inbound SSH requirement and no open agent port.
+- **Per-host agent tokens.** Install-over-SSH mints a fresh random token per host (stored as a digest server-side). A host's token authenticates only that host; revoking one does not affect others.
+- **TOFU host keys.** SSH host keys are pinned on first use for install-over-SSH.
+- **Optional agent mTLS.** `-agent-mtls` adds a per-host client certificate (P-256 CA) on top of the bearer token.
+
+## Control-plane auth
+
+- UI/API sign-in is bcrypt with lockout; sessions are cookie-based and `SameSite=Strict`, and every state-changing request must be `Content-Type: application/json` (a CSRF guard).
+- Users are **admin** or **viewer**, optionally scoped by cluster, folder, or host labels.
+- Enterprise adds **SSO** (SAML 2.0 and OIDC, with single logout) and **SCIM** provisioning.
+
+## Secrets
+
+The data-encryption key seals secrets in the server state with AES-256-GCM. For defence in depth, Enterprise can wrap it with **Vault Transit** instead of keeping a local key.
+
+## Supply chain
+
+Releases are built and signed in CI with **keyless cosign** (no private key in CI) and a published `SHA256SUMS` + SBOM. The public mirror is not re-signed, so artifacts stay independently verifiable against the source workflow's identity. See [install](install.md) for the verify command.
+
+## Self-update is fail-closed
+
+The opt-in one-click updater runs as root, unattended, so it is strict: it **requires cosign** (no HTTPS-only fallback), **pins one concrete release tag** (and aborts rather than follow a moving `latest`), and verifies the installer's **own** checksum and provenance **before** running it. It never escalates privilege from the server (which runs with `NoNewPrivileges`): the server writes a trigger file and a root systemd `.path` unit runs the update.
+
+![hostcd Security & Trust screen listing posture findings (commit signatures not verified, agent mTLS off, secrets sealed with a local key, metrics endpoint open), summary tiles, a trust-configuration table, and recent security activity](https://hostcd.dev/screenshots/security-trust.jpg)
+
+## Posture surfaced in the UI
+
+The **Security & Trust** screen scores the live posture — commit-signature verification, agent mTLS, secret sealing, state integrity, SSO/SCIM, and whether the metrics endpoint is open — so you can see at a glance what is on and what to harden next. `-verify` requires signed commits from allowed keys; `-metrics-token` protects `/metrics` on an untrusted network.
+
+Report vulnerabilities per the source repository's `SECURITY.md`. Next: [overview](overview.md) · [operations](operations.md).
+
+---
+
+# hostcd — operations (day two)
+
+## Upgrades
+
+hostcd upgrades server-first: upgrade `hostcd-server`, then the agents. The protocol is version-compatible across a release, so a newer server speaks to older agents during a rollout. Re-running the installer swaps the binary and restarts the unit.
+
+Upgrade an agent by re-running the agent install (or swapping the verified binary and `systemctl restart hostcd-agent`); the token in `/etc/hostcd/agent.env` is preserved, so there is no re-enrolment.
+
+## One-click self-update (opt-in)
+
+Because the server runs unprivileged it cannot replace its own binary, so one-click update is **off by default**. Enable it at install time with `HOSTCD_SELF_UPDATE=1` (cosign must be installed on the host — it is mandatory for the unattended root updater). This adds:
+
+- a root `hostcd-update.service` oneshot that re-runs the signed installer;
+- a root `hostcd-update.path` unit that starts it when the server writes a trigger file;
+- `HOSTCD_UPDATE_COMMAND` in `server.env`.
+
+With it enabled, the UI shows the running version in the sidebar, a **What's new** panel with the release notes, and an **Update now** button. Clicking it pins the latest tag, verifies the installer's cosign provenance and checksum, swaps the binary, and restarts — the UI waits and reloads on the new version. The manual install command stays available either way.
+
+## Backup and restore
+
+The **Backup** screen exports the full server state (applications, hosts, projects, users, settings) to a file, and restores from one. Keep a periodic export; the Recovery screen shows when the last export ran.
+
+## High availability (Enterprise)
+
+With the Postgres backend, run multiple servers: reads are served anywhere and writes go through an elected leader (writes from a standby are forwarded). The Recovery screen shows HA and leadership status.
+
+## Metrics
+
+`/metrics` exposes Prometheus metrics (host online/offline counts, app sync state, and more). On an untrusted network protect it with `-metrics-token`; the Security screen flags when it is open.
+
+## A typical change
+
+1. Commit a manifest change to the app's Git folder and push.
+2. hostcd shows the app **Out of sync** with a diff (the preview).
+3. For a gated (approval-required) app, one admin requests the sync and a different admin approves; otherwise it applies on sync or automatically.
+4. The rollout runs host by host; the result is recorded in history and sent to any webhook and audit sink.
+5. If something is wrong, **roll back** to the previous revision from the UI.
+
+Next: [overview](overview.md) · [concepts](concepts.md) · [security](security.md).
+
