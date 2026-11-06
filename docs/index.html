@@ -503,7 +503,11 @@
         <div class="act"><a class="btn ghost" href="#contact">Talk to sales ↗</a></div>
       </div>
     </div>
-    <p class="fineprint">Offline license · no credit card · self-hosted. <b>Founding Team — €99/mo, billed annually</b> (up to 50 hosts), available during public preview; the price is locked for your initial 12-month subscription. Support at this tier is email with a two-business-day response target — no SLA.</p>
+    <div style="margin:22px 0 6px;padding:18px 20px;border:1px solid var(--accent);border-radius:14px;background:var(--accent-soft)">
+      <h3 style="margin:0 0 6px;font-size:18px">Not ready to buy? Start a Founding Pilot — free.</h3>
+      <p style="margin:0;color:var(--muted)">60 days · 10&ndash;50 non-critical Linux hosts · no card · no annual commitment. I help with the migration personally; in exchange, weekly feedback and &mdash; if it works &mdash; permission to publish the measured result. <a href="#contact">Apply for a Founding Pilot &rarr;</a></p>
+    </div>
+    <p class="fineprint">Offline license · no credit card · self-hosted. <b>Founding Team — €99/mo, billed monthly</b> (up to 50 hosts), no annual commitment; the founding price stays locked while you remain subscribed during public preview. Support at this tier is email with a two-business-day response target — no SLA.</p>
 
     <div class="cmp">
       <div class="scroll">
@@ -562,7 +566,7 @@
       <div class="qa"><h3>Does a lapsed license lock me out?</h3><p>No. A lapse never deletes data or stops the control plane. After the grace period, hosts above the Community limit stay visible and keep enforcing the revision they last accepted — hostcd still corrects drift back to it — but they receive no newer Git revisions until a license is installed or a slot is freed. Backup, full data export, the audit trail, local admin login and license installation stay available — always. (Automated audit integrations are the Team feature, not access to your own data.)</p></div>
       <div class="qa"><h3>Is licensing really offline?</h3><p>Yes. License tokens are signed and verified locally against an embedded key — there is no phone-home, so air-gapped deployments work the same.</p></div>
       <div class="qa"><h3>Which operating systems are supported?</h3><p>Ubuntu/Debian and RHEL/Rocky, tested and supported. A Windows Server agent is in development — see the docs for its status.</p></div>
-      <div class="qa"><h3>What is the licence?</h3><p>The Community core is under the Business Source License 1.1 — a source-available licence that converts to Apache-2.0 on its change date. The public release ships signed binaries with cosign provenance and an SBOM you can verify independently; the code repository is not public yet. Enterprise modules are gated by a signed key.</p></div>
+      <div class="qa"><h3>What is the licence?</h3><p>The Community core is licensed under the Business Source License 1.1, which converts to Apache-2.0 on its change date. The public release ships signed binaries with cosign provenance and an SBOM you can verify independently. The core source repository is not public today. Enterprise modules are gated by a signed key.</p></div>
       <div class="qa"><h3>What do I actually run?</h3><p>A single control plane for the fleet and one lightweight agent per host — static binaries a small team can operate. Your desired state stays in your own Git repository.</p></div>
     </div>
   </div>
@@ -612,14 +616,15 @@
 <section id="contact" class="close">
   <div class="wrap">
     <span class="eyebrow">Talk to us</span>
-    <h2>Start Team or evaluate Enterprise.</h2>
-    <p>To buy a Team licence, request an Enterprise evaluation or volume pricing, or get help taking a Team trial to its first sync.
+    <h2>Start a Founding Pilot, buy Team, or evaluate Enterprise.</h2>
+    <p>Apply for a free 60-day Founding Pilot, buy a Team licence, request an Enterprise evaluation or volume pricing, or get help taking a Team trial to its first sync.
        This goes straight to the maintainer — nothing is posted publicly.</p>
     <form class="contactform" action="https://formspree.io/f/mgaapnko" method="POST">
       <input type="hidden" name="_subject" value="hostcd — new contact">
       <div class="frow">
         <label>Reason
           <select name="intent">
+            <option value="founding-pilot">Apply for a free 60-day Founding Pilot</option>
             <option value="buy-team">Buy Team (€99/mo founding)</option>
             <option value="team-license">Request or renew a Team licence</option>
             <option value="enterprise">Enterprise evaluation</option>
@@ -641,6 +646,7 @@
         <textarea name="message" rows="3" placeholder="Anything useful for us to know — fleet size, timeline, use case"></textarea>
       </label>
       <button class="btn primary" type="submit">Send ↗</button>
+      <script>(function(){var p=new URLSearchParams(location.search),f=document.querySelector('.contactform');if(!f)return;['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){var v=p.get(k);if(v){var i=document.createElement('input');i.type='hidden';i.name=k;i.value=v.slice(0,80);f.appendChild(i);}});})();</script>
       <p class="meta" style="margin-top:10px;opacity:.75">We will use the information you provide only to respond to your enquiry. See our <a href="/privacy/">Privacy Policy</a>.</p>
     </form>
     <p class="meta" style="margin-top:12px">Prefer email? <a href="mailto:hello@hostcd.dev?subject=hostcd%20enquiry">write to us directly</a>.
@@ -667,7 +673,7 @@
     </span>
   </div>
   <div class="wrap" style="margin-top:12px">
-    <span class="draftnote">hostcd is live — install with one command below. Founding pricing (€99/mo) is available for a limited number of early customers.</span>
+    <span class="draftnote">hostcd is live — install with one command below. Founding pricing is €99/mo billed monthly, or start a free 60-day Founding Pilot — both for a limited number of early customers.</span>
   </div>
 </footer>
 
