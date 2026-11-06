@@ -17,6 +17,34 @@
 <meta name="twitter:title" content="hostcd — your Linux fleet, reconciled to Git">
 <meta name="twitter:description" content="GitOps for Linux hosts, without Kubernetes. Self-hosted, pull-based, free for 10 hosts.">
 <meta name="twitter:image" content="https://hostcd.dev/ui-dark.png">
+<!-- Structured data. No review/aggregateRating is included: adding fake ratings
+     is against Google's policy, and we have no real reviews yet. softwareVersion
+     is kept current by the release workflow (docs publish step). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": "https://hostcd.dev/#software",
+  "name": "hostcd",
+  "url": "https://hostcd.dev/",
+  "description": "Self-hosted GitOps and continuous reconciliation for Linux hosts without Kubernetes.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, Windows Server",
+  "softwareVersion": "0.3.12",
+  "downloadUrl": "https://github.com/Inblade/hostcd-dist/releases/latest",
+  "license": "https://mariadb.com/bsl11/",
+  "isAccessibleForFree": true,
+  "offers": [
+    { "@type": "Offer", "name": "Community", "price": "0", "priceCurrency": "EUR", "url": "https://hostcd.dev/#editions" },
+    { "@type": "Offer", "name": "Team", "price": "99", "priceCurrency": "EUR", "url": "https://hostcd.dev/#editions",
+      "priceSpecification": { "@type": "UnitPriceSpecification", "price": "99", "priceCurrency": "EUR", "billingDuration": "P1M" } }
+  ],
+  "sameAs": [
+    "https://github.com/Inblade/hostcd-dist",
+    "https://medium.com/@dkocheto"
+  ]
+}
+</script>
 <link rel="preload" href="/fonts/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
@@ -252,6 +280,7 @@
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#editions">Editions</a>
       <a class="navlink" href="#faq">FAQ</a>
+      <a class="navlink" href="#resources">Resources</a>
       <a class="navlink" href="/guide/overview.html">Docs</a>
       <a class="navlink" href="#contact">Contact</a>
       <a class="ghlink" href="https://github.com/Inblade/hostcd-dist">Downloads</a>
@@ -271,6 +300,7 @@
           across VMs and bare metal — without inbound agent ports or Kubernetes.</p>
         <div class="cta">
           <a class="btn primary" href="#get-started">View installation guide</a>
+          <a class="btn ghost" id="watch-demo" href="#demo-video" data-track="watch-demo" hidden>▶ Watch 75-sec demo</a>
           <a class="btn ghost" href="https://github.com/Inblade/hostcd-dist">Downloads on GitHub ↗</a>
         </div>
         <p class="meta"><b>Self-hosted</b> · <b>Pull-based agents</b> · <b>Free for up to 10 hosts</b></p>
@@ -296,6 +326,42 @@
     </div>
   </div>
 </section>
+
+<!-- 75-second product demo. Hidden until the video is published: set YT_ID below
+     to the YouTube id (and swap POSTER for a 16:9 still). The player loads only on
+     click, via youtube-nocookie, so nothing third-party loads until the visitor asks. -->
+<section id="demo-video" class="wrap" style="max-width:900px;margin:10px auto 0;padding:0 20px" hidden>
+  <div style="position:relative;aspect-ratio:16/9;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface-2)">
+    <img id="demo-poster" src="/ui-dark.png" alt="hostcd 75-second product demo: drift detected on a host, previewed as a diff, synced from Git, then self-healed" style="width:100%;height:100%;object-fit:cover;display:block">
+    <button id="demo-play" aria-label="Play the 75-second hostcd demo" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);border:none;cursor:pointer">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:26px;box-shadow:0 10px 30px -8px var(--glow)">▶</span>
+    </button>
+  </div>
+  <p class="meta" style="text-align:center;margin-top:10px">75-second product demo · <a href="#get-started" data-track="demo-install">install it yourself ↗</a></p>
+</section>
+<script>
+(function(){
+  // Publish the demo: set YT_ID to the YouTube id and POSTER to a 16:9 still.
+  var YT_ID = "";               // e.g. "AbCdEf12345" — empty keeps the block hidden
+  var POSTER = "/ui-dark.png";  // replace with a dedicated 16:9 poster when available
+  if (!YT_ID) return;
+  var sec = document.getElementById("demo-video"), btn = document.getElementById("watch-demo");
+  var poster = document.getElementById("demo-poster");
+  if (poster && POSTER) { poster.src = POSTER; }
+  sec.hidden = false; if (btn) btn.hidden = false;
+  document.getElementById("demo-play").addEventListener("click", function(){
+    var f = document.createElement("iframe");
+    f.width = "100%"; f.height = "100%";
+    f.style.cssText = "position:absolute;inset:0;border:0";
+    f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    f.allowFullscreen = true;
+    f.title = "hostcd demo — GitOps for Linux hosts without Kubernetes";
+    f.src = "https://www.youtube-nocookie.com/embed/" + YT_ID + "?autoplay=1&rel=0";
+    this.parentNode.replaceChild(f, this);
+    if (window.zaraz) { try { window.zaraz.track("demo_play", { id: YT_ID }); } catch (e) {} }
+  });
+})();
+</script>
 
 <div class="techstrip">
   <div class="wrap">
@@ -364,6 +430,16 @@
    <b>hostcd-agent</b>   <b>hostcd-agent</b>   <b>hostcd-agent</b>   <b>hostcd-agent</b>
       web-1          web-2           db-1         stg-web-1</pre>
     </div>
+  </div>
+</section>
+
+<section class="wrap" style="max-width:1000px;margin:0 auto;padding:8px 20px">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;justify-content:space-between;border:1px solid var(--line);border-radius:14px;padding:18px 22px;background:var(--surface-2)">
+    <div>
+      <div class="eyebrow">Running Ansible from cron?</div>
+      <p style="margin:6px 0 0">Keep your playbooks for provisioning. Move continuously-managed state to hostcd — for visible drift and self-heal.</p>
+    </div>
+    <a class="btn ghost" href="/guides/ansible-cron-to-hostcd/" data-track="ansible-guide" style="white-space:nowrap">See the migration path →</a>
   </div>
 </section>
 
@@ -471,6 +547,23 @@
       <div class="qa"><h3>What is the licence?</h3><p>The Community core is under the Business Source License 1.1 — a source-available licence that converts to Apache-2.0 on its change date. The public release ships signed binaries with cosign provenance and an SBOM you can verify independently; the code repository is not public yet. Enterprise modules are gated by a signed key.</p></div>
       <div class="qa"><h3>What do I actually run?</h3><p>A single control plane for the fleet and one lightweight agent per host — static binaries a small team can operate. Your desired state stays in your own Git repository.</p></div>
     </div>
+  </div>
+</section>
+
+<section id="resources" class="wrap" style="max-width:1000px;margin:0 auto;padding:40px 20px 10px">
+  <div class="eyebrow">From the engineering log</div>
+  <h2 style="margin:8px 0 18px">Resources</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
+    <a href="https://medium.com/@dkocheto/argo-cd-fixed-my-clusters-nothing-was-watching-my-hosts-so-i-built-hostcd-067028a88027" data-track="resource-why" style="display:block;border:1px solid var(--line);border-radius:14px;padding:20px 22px;background:var(--surface);text-decoration:none;color:inherit">
+      <h3 style="margin:0 0 8px">Why I built hostcd</h3>
+      <p class="muted" style="margin:0 0 12px">Argo CD gave me continuous reconciliation for Kubernetes. I wanted the same operating model for Linux hosts.</p>
+      <span style="color:var(--accent);font-weight:600">Read the story ↗</span>
+    </a>
+    <a href="/reliability/" data-track="resource-reliability" style="display:block;border:1px solid var(--line);border-radius:14px;padding:20px 22px;background:var(--surface);text-decoration:none;color:inherit">
+      <h3 style="margin:0 0 8px">Seven failures, four real hosts</h3>
+      <p class="muted" style="margin:0 0 12px">Control-plane crash, corrupted state, agent failure, network partition, reboot and real drift recovery — tested live on four real hosts.</p>
+      <span style="color:var(--accent);font-weight:600">Read the reliability report →</span>
+    </a>
   </div>
 </section>
 

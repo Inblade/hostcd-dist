@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engineering validation — seven failure scenarios on four real hosts · hostcd</title>
+<meta name="description" content="hostcd's recovery paths tested live: control-plane crash, corrupted state, agent failure, network partition, host reboot and real drift recovery — seven failure scenarios on four real Linux hosts, seven passed.">
+<link rel="canonical" href="https://hostcd.dev/reliability/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="hostcd">
+<meta property="og:title" content="Engineering validation — seven failure scenarios on four real hosts">
+<meta property="og:description" content="Control-plane crash, corrupted state, agent failure, network partition, reboot and real drift recovery — tested live on four real Linux hosts. Seven passed.">
+<meta property="og:url" content="https://hostcd.dev/reliability/">
+<meta property="og:image" content="https://hostcd.dev/ui-dark.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hostcd.dev/ui-dark.png">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<main class="content" style="max-width:780px;margin:0 auto;padding:40px 22px 64px">
+  <p class="muted mono" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">Engineering validation</p>
+  <h1>Seven failure scenarios on four real hosts</h1>
+  <blockquote>hostcd is not a slideware control plane. Its recovery paths are exercised by a live failure-injection drill on real Linux hosts — not simulate mode. This is what that drill is, and what it isn't.</blockquote>
+
+  <p>The drill runs against <strong>one control plane and four real Ubuntu 24.04 hosts</strong> (Gcore, Frankfurt-2). The agents apply real packages, files and services — nothing is faked in memory. Each scenario injects a concrete failure and asserts that the fleet recovers to the state declared in Git.</p>
+
+  <h2>Results</h2>
+  <table>
+    <thead><tr><th>#</th><th>Scenario</th><th>What was injected → expected recovery</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>S1</td><td>Baseline converges</td><td>Fresh fleet → all four hosts online, app <code>base</code> Synced/Healthy</td><td><strong>PASS</strong></td></tr>
+      <tr><td>S2</td><td>Control-plane crash / restart</td><td>Kill the control plane → hosts hold their config; on restart the apps reload and the fleet reconverges</td><td><strong>PASS</strong></td></tr>
+      <tr><td>S3</td><td>Corrupted state → snapshot recovery</td><td>Corrupt <code>state.json</code> → the server recovers applications from its <code>.bak</code> snapshot</td><td><strong>PASS</strong></td></tr>
+      <tr><td>S4</td><td>Agent crash + drift self-heal</td><td>Kill the agent and hand-edit <code>/etc/motd</code> → on agent restart the managed content is restored</td><td><strong>PASS</strong></td></tr>
+      <tr><td>S5</td><td>Network partition tolerated</td><td>Partition a host → it goes offline on the control plane but keeps its config, then reconnects and re-Syncs after the heal</td><td><strong>PASS</strong></td></tr>
+      <tr><td>S6</td><td>Host reboot auto-recovers</td><td>Reboot a host → systemd restarts the agent; the host comes back online and Synced</td><td><strong>PASS</strong></td></tr>
+      <tr><td>S7</td><td>Load: 50 extra managed files</td><td>Add 50 managed files → the fleet re-Syncs in ~3s with the files present on every host</td><td><strong>PASS</strong></td></tr>
+    </tbody>
+  </table>
+  <p><strong>Result: 7 passed, 0 failed.</strong> The drill also covers load and rolling/HA upgrades; the scripts and committed reports live in the repository.</p>
+
+  <h2>What this is — and what it isn't</h2>
+  <p>Be clear-eyed about the claim. This is a <strong>point-in-time</strong> chaos run against a <strong>handful</strong> of hosts, authored and run by the maintainer. It is real evidence that the recovery paths work, on real machines, not in a mock. It is <strong>not</strong> a continuously-green CI gate, a large-scale soak test, or third-party validation. Those come with a paying pilot, not a demo.</p>
+
+  <h2>Read the long version</h2>
+  <p>The narrative — how each failure was injected and what survived — is written up here: <a href="https://medium.com/@dkocheto/i-broke-my-gitops-control-plane-on-purpose-heres-what-survived-40d11e9171cf" data-track="medium-reliability">I broke my GitOps control plane on purpose. Here's what survived. ↗</a></p>
+
+  <hr>
+  <p><strong>See it on your own hosts.</strong> hostcd is self-hosted and free for up to 10 hosts. <a href="/guide/install.html" data-track="cta-install">Install the control plane →</a> or read <a href="/guide/overview.html">how it works</a>.</p>
+</main>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/guide/overview.html">Docs</a> · <a href="https://github.com/Inblade/hostcd-dist">GitHub</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>

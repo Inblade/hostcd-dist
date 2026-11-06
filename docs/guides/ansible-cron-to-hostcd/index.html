@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From scheduled Ansible to continuous reconciliation — Ansible cron → hostcd</title>
+<meta name="description" content="A continuous configuration management alternative to running Ansible from cron: keep your playbooks for provisioning, move continuously-managed state to hostcd for visible drift and self-heal. A practical migration path.">
+<link rel="canonical" href="https://hostcd.dev/guides/ansible-cron-to-hostcd/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="hostcd">
+<meta property="og:title" content="Ansible cron → hostcd: continuous reconciliation for Linux hosts">
+<meta property="og:description" content="cron tells you a playbook ran, not whether the host matches Git. Move continuously-managed state to hostcd for visible Synced/OutOfSync/Healthy state and self-heal — keep Ansible for provisioning.">
+<meta property="og:url" content="https://hostcd.dev/guides/ansible-cron-to-hostcd/">
+<meta property="og:image" content="https://hostcd.dev/ui-dark.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hostcd.dev/ui-dark.png">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<main class="content" style="max-width:780px;margin:0 auto;padding:40px 22px 64px">
+  <p class="muted mono" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">Migration guide</p>
+  <h1>From scheduled Ansible to continuous reconciliation</h1>
+  <blockquote>A continuous configuration management alternative to running Ansible from cron. hostcd does not replace all of Ansible — it replaces the <em>scheduled convergence</em> part, and gives you visible drift and self-heal in exchange.</blockquote>
+
+  <h2>Before: Ansible from cron</h2>
+  <pre><code>*/15 * * * * ansible-playbook -i inventory production.yml</code></pre>
+  <p>This works, but it is blind between runs:</p>
+  <ul>
+    <li>cron tells you the playbook <em>ran</em> — not whether a host currently matches Git.</li>
+    <li>Drift that happens between runs goes unnoticed until the next pass (or forever, if a task is <code>changed_when: false</code>).</li>
+    <li>SSH has to be reachable from the runner to every host.</li>
+    <li>There is no single <strong>Synced / OutOfSync / Healthy</strong> view of the fleet.</li>
+    <li>Failures are buried in the logs of one specific run.</li>
+  </ul>
+
+  <h2>After: hostcd</h2>
+  <pre><code>Git repository
+      ↓
+hostcd control plane      (renders per host, shows drift as a diff, history + rollback)
+      ↓  outbound long-poll (nothing listens on a host; no inbound SSH)
+host agents
+      ↓
+packages / files / services / users / sysctls / …</code></pre>
+  <p>The control plane continuously reconciles every host against Git, surfaces drift as a per-resource diff <em>before</em> it applies, and can self-heal manual changes. Agents dial out, so no inbound SSH or open port is required. See <a href="/guide/concepts.html">core concepts</a> for the model.</p>
+
+  <h2>The migration path</h2>
+  <p>You do not have to switch everything at once. Run both side by side until you trust it.</p>
+  <ol>
+    <li>Pick <strong>one non-critical playbook</strong> and 1–3 hosts.</li>
+    <li>Translate the supported resources (packages, files, services, users, groups, cron, sysctls, …) into a hostcd manifest.</li>
+    <li>Install the agents — <strong>without</strong> turning off the Ansible cron yet.</li>
+    <li>Compare hostcd's rendered result against the current state. Fix the manifest until they match.</li>
+    <li>Temporarily remove the overlapping Ansible tasks for that scope.</li>
+    <li>Verify drift/self-heal and a host reboot behave as expected.</li>
+    <li>After a stable period, disable the cron entry for that scope.</li>
+    <li>Keep Ansible for provisioning and any unsupported modules.</li>
+  </ol>
+
+  <h2>The honest framing</h2>
+  <blockquote>hostcd does not need to replace all of Ansible. Keep Ansible for provisioning and one-off orchestration; use hostcd where you need continuous convergence and visible drift.</blockquote>
+
+  <hr>
+  <p><strong>Running Ansible from cron?</strong> Keep your playbooks for provisioning, and move continuously-managed state to hostcd. <a href="/guide/install.html" data-track="cta-install">Install the control plane →</a> · <a href="/guide/concepts.html">read the concepts</a> · free for up to 10 hosts.</p>
+</main>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/guide/overview.html">Docs</a> · <a href="https://github.com/Inblade/hostcd-dist">GitHub</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>
