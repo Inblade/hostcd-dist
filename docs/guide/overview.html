@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview · hostcd docs</title>
+<meta name="description" content="What hostcd is, who it is for, how pull-based reconciliation works, and the editions.">
+<link rel="canonical" href="https://hostcd.dev/guide/overview.html">
+<link rel="alternate" type="text/markdown" href="/guide/overview.md">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
+     Replace __CF_BEACON_TOKEN__ with the token from the Cloudflare dashboard
+     (Analytics & Logs → Web Analytics). Until then this loads nothing useful but is harmless. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a class="mono" href="/llms.txt">llms.txt</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">Documentation</div>
+    <nav class="sidenav"><a href="/guide/overview.html" class="active">Overview</a><a href="/guide/install.html">Install</a><a href="/guide/concepts.html">Concepts</a><a href="/guide/security.html">Security</a><a href="/guide/operations.html">Operations</a></nav>
+    <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
+  </aside>
+  <main class="content">
+<h1>hostcd — overview</h1>
+<blockquote>
+<p>hostcd keeps every Linux server aligned with Git: continuous drift detection, self-healing, and safe, previewed rollouts for VMs and bare metal — without Kubernetes and without any inbound connection to the managed hosts.</p>
+</blockquote>
+<h2>What it is</h2>
+<p>An <strong>application</strong> in hostcd points at a folder in a Git repository and at a set of hosts (by name or by label). The control plane (<code>hostcd-server</code>) renders that folder per host, compares the result to what is actually on the host, and shows any difference as a diff. You then <strong>sync</strong> (apply), <strong>roll back</strong>, or <strong>prune</strong> from a web UI or API. Each host runs a small <strong>agent</strong> that only dials out over HTTPS, so nothing listens on a managed host.</p>
+<p>The technical analogy is &quot;Argo CD for plain hosts&quot;, but the job is narrower and concrete: your Linux fleet continuously reconciled against a Git repo, the way Argo CD reconciles a Kubernetes cluster.</p>
+<p><img src="../screenshots/applications.jpg" alt="hostcd Applications screen listing five applications with their git path, sync status, health, and synced-host count, with a folder tree in the sidebar"></p>
+<h2>Who it is for</h2>
+<p>Teams that have outgrown running Ansible by hand or on cron, but do not want to adopt Puppet/Rudder, move to NixOS, or pull ordinary servers into Kubernetes just to get GitOps. It targets <strong>small-to-medium Linux fleets</strong> (Ubuntu/Debian and RHEL/Rocky are the supported families).</p>
+<h2>How it works</h2>
+<pre><code>                 git (GitLab / GitHub / Gitea)
+                            │  fetch, webhook
+                ┌───────────▼───────────┐
+                │     hostcd-server     │  UI + API, renders manifests per host,
+                │   (one per fleet)     │  sync operations, history, rollback
+                └───────────▲───────────┘
+          long-poll HTTPS   │   (hosts only dial out, nothing listens on them)
+        ┌──────────────┬────┴─────────┬──────────────┐
+   hostcd-agent   hostcd-agent   hostcd-agent   hostcd-agent
+     web-1          web-2           db-1          stg-web-1
+</code></pre>
+<ul>
+<li><strong>Pull, not push.</strong> Agents long-poll the server; the server never connects into a host. No inbound SSH or open agent port is required.</li>
+<li><strong>Per-host rendering.</strong> A single application folder renders differently per host using host facts (hostname, OS id/version/family) and labels, so one manifest serves a heterogeneous fleet.</li>
+<li><strong>Preview before apply.</strong> Drift is shown as a diff first; applying is an explicit operation (or automated per app), with full history and one-click rollback.</li>
+</ul>
+<p><img src="../screenshots/fleet-overview.jpg" alt="hostcd Fleet overview with summary tiles for hosts, clusters, applications and cluster-apps, and a &quot;Needs attention&quot; list"></p>
+<h2>Editions</h2>
+<table>
+<thead>
+<tr>
+<th>Edition</th>
+<th>What you get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Community</strong> (free, BSL 1.1)</td>
+<td>The full core: git → preview → rollout → audit, pull agent, all system resource kinds, drift/self-heal, backup/restore, upgrade/rollback.</td>
+</tr>
+<tr>
+<td><strong>Team</strong> (licensed)</td>
+<td>Approval gates, outbound notifications (webhooks), audit export, a raised host limit.</td>
+</tr>
+<tr>
+<td><strong>Enterprise</strong> (licensed)</td>
+<td>SSO (SAML/OIDC), SCIM, Postgres-backed HA, Vault Transit secret sealing.</td>
+</tr>
+</tbody>
+</table>
+<p>The supported release ships the <strong>core only</strong>. See <a href="concepts.md">concepts</a> for the model, <a href="install.md">install</a> to set it up, <a href="security.md">security</a> for the trust model, and <a href="operations.md">operations</a> for day-two tasks.</p>
+
+    <hr>
+    <p class="muted">This page is also available as <a href="/guide/overview.md" data-track="md-source">Markdown</a>, indexed in <a href="/llms.txt" data-track="llms">llms.txt</a> for AI assistants.</p>
+  </main>
+</div>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="https://github.com/Inblade/hostcd-dist" data-track="github">GitHub</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md" data-track="security">Security</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/LICENSE">BSL 1.1</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>

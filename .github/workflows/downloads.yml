@@ -1,0 +1,71 @@
+name: downloads
+
+# Snapshot how many times each release asset (install.sh + the binaries) has
+# been downloaded, so product downloads are monitored over time. Runs daily and
+# on demand. History is appended to a CSV on the unprotected `data/downloads`
+# branch (so it never touches `main` or the published site), and the latest
+# counts are written to the workflow run summary for a quick look.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'   # daily, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: downloads
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: snapshot release download counts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          ts="$(date -u +%FT%TZ)"
+          json="$(gh api "repos/$REPO/releases" --paginate \
+            -q '.[] | .tag_name as $t | .assets[]? | {tag:$t, name:.name, count:.download_count}' \
+            | jq -s '.')"
+          total="$(printf '%s' "$json" | jq '[.[].count] | add // 0')"
+
+          # Quick look: current counts in the run summary.
+          {
+            echo "## hostcd downloads — $ts"
+            echo ""
+            echo "Grand total: **$total**"
+            echo ""
+            echo '| release | asset | count |'
+            echo '|---|---|---|'
+            printf '%s' "$json" | jq -r '.[] | "| \(.tag) | \(.name) | \(.count) |"' | sort
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # History: append one CSV row per asset on the data/downloads branch.
+          work="$(mktemp -d)"
+          git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/$REPO" "$work"
+          cd "$work"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin data/downloads >/dev/null 2>&1; then
+            git fetch --quiet origin data/downloads
+            git checkout --quiet data/downloads
+          else
+            git checkout --quiet --orphan data/downloads
+            git rm -rfq . >/dev/null 2>&1 || true
+            printf 'timestamp,tag,asset,count\n' > downloads.csv
+            printf '# hostcd release download counts, appended daily by .github/workflows/downloads.yml\n' > README.md
+          fi
+          [ -f downloads.csv ] || printf 'timestamp,tag,asset,count\n' > downloads.csv
+          printf '%s' "$json" | jq -r --arg ts "$ts" '.[] | [$ts, .tag, .name, (.count|tostring)] | @csv' >> downloads.csv
+          git add downloads.csv README.md
+          if git diff --cached --quiet; then
+            echo "no change to record"; exit 0
+          fi
+          git commit --quiet -m "downloads snapshot $ts (total $total)"
+          git push --quiet origin data/downloads
+          echo "appended snapshot $ts (total $total) to data/downloads/downloads.csv"

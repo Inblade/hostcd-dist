@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://hostcd.dev/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://hostcd.dev/guide/overview.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://hostcd.dev/guide/install.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://hostcd.dev/guide/concepts.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://hostcd.dev/guide/security.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://hostcd.dev/guide/operations.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://hostcd.dev/llms.txt</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://hostcd.dev/llms-full.txt</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://hostcd.dev/guide/overview.md</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://hostcd.dev/guide/install.md</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://hostcd.dev/guide/concepts.md</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://hostcd.dev/guide/security.md</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://hostcd.dev/guide/operations.md</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://hostcd.dev/privacy/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://hostcd.dev/terms/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://hostcd.dev/terms-commercial/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
