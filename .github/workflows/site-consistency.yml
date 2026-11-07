@@ -3,7 +3,7 @@ name: site-consistency
 # The public dist repo requires a PR but had no status checks. This runs the
 # dependency-free site checker (JSON-LD validity, pricing, demo duration,
 # dangling anchors, broken relative links) so the drift a manual review caught
-# cannot land again. Make it a required check in branch protection.
+# cannot land again. This job name (site-consistency) is the required status-check context.
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  site-consistency:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
