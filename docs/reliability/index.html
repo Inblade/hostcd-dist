@@ -47,7 +47,7 @@
       <tr><td>S7</td><td>Load: 50 extra managed files</td><td>Add 50 managed files → the fleet re-Syncs in ~3s with the files present on every host</td><td><strong>PASS</strong></td></tr>
     </tbody>
   </table>
-  <p><strong>Result: 7 passed, 0 failed.</strong> The drill also covers load and rolling/HA upgrades; the scripts and committed reports live in the repository.</p>
+  <p><strong>Result: 7 passed, 0 failed.</strong> The drill also covers load and rolling/HA upgrades. Each scenario and its result are described on this page; the test harness itself currently lives in the core repository, which is not yet public — the source will be published before GA.</p>
 
   <h2>What this is — and what it isn't</h2>
   <p>Be clear-eyed about the claim. This is a <strong>point-in-time</strong> chaos run against a <strong>handful</strong> of hosts, authored and run by the maintainer. It is real evidence that the recovery paths work, on real machines, not in a mock. It is <strong>not</strong> a continuously-green CI gate, a large-scale soak test, or third-party validation. Those come with a paying pilot, not a demo.</p>
