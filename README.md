@@ -37,3 +37,29 @@ cosign verify-blob SHA256SUMS \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 sha256sum -c SHA256SUMS
 ```
+
+## Windows agent (late beta)
+
+The managed **host** can run Windows Server (amd64); the control plane itself is
+Linux. Each release publishes `hostcd-agent-windows-amd64.exe` next to the Linux
+binaries, under the same signed `SHA256SUMS` + cosign bundle and SBOM. It is a
+**late-beta** target — validated live on Windows Server 2025 (`package` via
+winget/Chocolatey, `file`, `service` via the Windows SCM); continuous drift/soak
+and a native service wrapper are not yet proven.
+
+Pull-based, so no inbound port to the Windows host. Download + verify, then enroll
+(PowerShell **as Administrator**):
+
+```powershell
+$base = "https://github.com/Inblade/hostcd-dist/releases/latest/download"
+Invoke-WebRequest "$base/hostcd-agent-windows-amd64.exe" -OutFile hostcd-agent.exe
+Invoke-WebRequest "$base/SHA256SUMS" -OutFile SHA256SUMS
+$want = (Select-String -Path SHA256SUMS -Pattern 'hostcd-agent-windows-amd64\.exe$').Line.Split(' ')[0]
+$got  = (Get-FileHash hostcd-agent.exe -Algorithm SHA256).Hash.ToLower()
+if ($got -ne $want) { throw "checksum mismatch — refusing to run" }
+```
+
+Run `hostcd-agent.exe` pointing at your control plane, or install it as a SYSTEM
+scheduled task with the agent's own bootstrap (`windows-bootstrap.ps1`). The
+Windows agent requires an **https** control-plane URL (http only for loopback) so
+the enrolment token and the binary are never sent in the clear.
