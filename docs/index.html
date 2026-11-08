@@ -374,6 +374,7 @@
     f.style.cssText = "position:absolute;inset:0;border:0";
     f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
     f.allowFullscreen = true;
+    f.referrerPolicy = "strict-origin-when-cross-origin"; // YouTube needs the origin referrer or the player fails with "Error 153"
     f.title = "hostcd demo — GitOps for Linux hosts without Kubernetes";
     f.src = "https://www.youtube-nocookie.com/embed/" + YT_ID + "?autoplay=1&rel=0";
     this.parentNode.replaceChild(f, this);
