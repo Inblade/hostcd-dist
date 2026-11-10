@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security &amp; threat model · hostcd</title>
+<meta name="description" content="How hostcd secures the control plane and agents, what an attacker can and cannot do, enrollment, agent permissions, secrets, and TLS — the guarantees, without disclosing source.">
+<link rel="canonical" href="https://hostcd.dev/security/">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="/changelog/">Changelog</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">Documentation</div>
+    <nav class="sidenav"><a href="/guide/overview.html">Overview</a><a href="/guide/install.html">Install</a><a href="/guide/concepts.html">Concepts</a><a href="/guide/security.html">Security (operator)</a><a href="/security/" class="active">Threat model</a><a href="/guide/operations.html">Operations</a></nav>
+    <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
+  </aside>
+  <main class="content">
+<h1>Security &amp; threat model</h1>
+<p>This page describes how hostcd secures communication between the control plane and agents, what an attacker can and cannot do, and how secrets, enrollment and TLS actually work. It states the <strong>guarantees</strong> — it does not disclose source. Everything here matches the behaviour shipped in the signed releases; it is condensed from the threat model that ships with the product.</p>
+
+<h2 id="architecture">Architecture and trust boundaries</h2>
+<pre class="mono" style="white-space:pre;overflow-x:auto">  Git (GitLab/GitHub)  ──signed/reviewed pushes──►  hostcd-server
+                           (webhook, outbound)        renders per-host state,
+                                                       holds sealed credentials,
+  operators ──login (HTTPS)───────────────────────►   serves the operator UI
+                                                              │  outbound only
+                        hosts dial OUT, long-poll HTTPS       │  (no inbound to hosts)
+                   hostcd-agent   hostcd-agent   hostcd-agent  (each root, dial-out only)</pre>
+<ul>
+<li><strong>Git → server is a trust relationship, not a boundary hostcd can police.</strong> hostcd verifies commit signatures when you configure <code class="mono">allowed_signers</code>, but it cannot un-apply a malicious commit a valid signer pushed. Write access to a tracked folder is, in effect, root on every host that folder targets. <strong>Protecting the repo is your job</strong> — branch protection, required review, signed-commit verification.</li>
+<li><strong>Server → host is one-directional at runtime.</strong> Hosts never accept connections; the agent only dials out and polls. The single exception is the one-time bootstrap (SSH install / cluster provisioning), after which the link is pull-only again.</li>
+<li><strong>Inside the server host is inside the boundary.</strong> Root on the server can read <code class="mono">bootstrap.key</code> and therefore every sealed credential, and can read rendered manifests. <strong>Treat the server host as a crown-jewel box.</strong></li>
+<li><strong>An agent trusts the server's manifests.</strong> A compromised server is therefore a fleet-wide compromise — the same concentration of trust Argo CD has over a cluster, and the reason the server host and the git repo are the two things to guard hardest.</li>
+</ul>
+
+<h2 id="questions">The questions a security engineer asks</h2>
+
+<h3>Enrollment — how a new host joins</h3>
+<p>A host is enrolled by an admin, over the one-time bootstrap SSH channel, which mints a fresh <strong>per-host bearer token</strong> (stored server-side only as a SHA-256 digest) and installs the agent. SSH host keys are pinned on first use (TOFU); a changed key is refused. A host with no SSH path (a Windows agent) is enrolled with a token minted by the admin API and set on the host. A per-host token authorizes only <em>that</em> host's poll and is revocable on its own — revoking one does not affect the others. There is no static fleet-wide enrollment secret required in steady state.</p>
+
+<h3>Long-poll mechanics</h3>
+<p>The agent opens an <strong>outbound</strong> HTTPS long-poll to the server and holds it until the server has a change for that host or a server-side timeout elapses, then reconnects — so a change reaches a host in about a second, not a fixed interval, with no inbound port. Bodies are capped (32&nbsp;MB agent-poll, 1&nbsp;MB API) and headers have a 10&nbsp;s read timeout; long-polls and SSE are intentionally long-lived, so rate-limiting belongs in your proxy. It works through a load balancer or proxy because the agent is an ordinary HTTPS client.</p>
+
+<h3>Agent permissions</h3>
+<p>The agent runs as <strong>root</strong>, because manifest operations (package, service and file management on system paths) require it — exactly as <code class="mono">ansible-pull</code> from cron would. It executes <strong>only</strong> what the server renders from git for its own host. The agent does <strong>not</strong> accept inbound connections, does <strong>not</strong> run arbitrary shell outside manifest operations, and exposes <strong>no</strong> management API on the host. The systemd unit it installs is hardened (<code class="mono">ProtectKernelModules</code>, <code class="mono">ProtectClock</code>, <code class="mono">LockPersonality</code>, <code class="mono">RestrictRealtime</code>, <code class="mono">PrivateTmp</code>, a <code class="mono">0700</code> state dir).</p>
+
+<h3>Compromised control plane — blast radius</h3>
+<p>This is the highest-impact scenario, stated plainly: a compromised server can render arbitrary manifests to every connected agent, so it is a <strong>fleet-wide compromise</strong>. There is no second signer between the server and a host for host manifests. hostcd does not pretend otherwise — the mitigations are operational: treat the server host as crown-jewels (minimal access, patched, monitored), ship the actor-attributed audit trail somewhere durable, and wrap <code class="mono">bootstrap.key</code> with Vault Transit to protect data <em>at rest</em> (a live compromised server still decrypts — inherent to any KMS envelope). A compromised <em>agent</em>, by contrast, is one host only: it cannot spread to others through hostcd.</p>
+
+<h3>Secrets lifecycle</h3>
+<p>Sealed credentials at rest on the server — SSH keys used for the one-time install, admin kubeconfigs, webhook signing secrets, the session key, the SAML SP key — are encrypted with AES-256-GCM under <code class="mono">bootstrap.key</code> (optionally wrapped by Vault Transit). SSH keys and kubeconfigs are <strong>never served to agents</strong>. Secrets referenced by a manifest are resolved at the server and delivered inside that host's rendered manifest over HTTPS; a file marked <code class="mono">sensitive: true</code> <strong>never leaves the host</strong> it belongs to. Secrets are not written to git in plaintext.</p>
+
+<h3>TLS — default and options</h3>
+<p>The server should be reached only over <strong>HTTPS</strong>; install-over-SSH refuses a non-<code class="mono">https</code> server (except loopback), and the agent verifies the server certificate. Plaintext HTTP on a non-loopback listener without <code class="mono">-tls-cert</code> is <strong>warned about, not blocked</strong> — terminate TLS directly or at a proxy. <strong>Mutual TLS is opt-in</strong> (<code class="mono">-agent-mtls</code>): with it on, a leaked token alone no longer authorizes a poll (the host also needs its client certificate); with it off, a valid per-host token over verified server TLS is sufficient. We state this honestly rather than claim mTLS-by-default.</p>
+
+<h2 id="adversaries">Adversaries and how hostcd answers them</h2>
+<div class="cmp"><div class="scroll"><table>
+<thead><tr><th>Adversary</th><th>What hostcd does</th></tr></thead>
+<tbody>
+<tr><td>Network attacker between agent and server</td><td>Install refuses non-<code class="mono">https</code> (except loopback); the agent verifies the server cert; optional <code class="mono">-agent-mtls</code> means a leaked token alone no longer authorizes a poll.</td></tr>
+<tr><td>Someone who steals one host's agent token</td><td>Per-host tokens are pinned to the host <em>name</em> and cannot pull another host's manifest. App destination matching uses <strong>admin-assigned</strong> labels, frozen at enrolment — a stolen token cannot relabel its host into another app's (and its secrets') scope. Revoke drops the digest and refuses every token for that host at once.</td></tr>
+<tr><td>Machine-in-the-middle on the bootstrap SSH</td><td>Host key pinned on first use (TOFU); a changed key is refused.</td></tr>
+<tr><td>Brute-force / credential spray on operator login</td><td>~700&nbsp;ms delay per failure, per-account lockout (5/15&nbsp;min) <em>and</em> per-client-address lockout, dummy-hash compare so timing does not reveal account existence.</td></tr>
+<tr><td>Stolen or stale operator session</td><td>Stateless signed cookies with a per-user version; bump it (sign-out, password reset) to kill all of a user's sessions. OIDC/SAML single logout ties session life to the IdP.</td></tr>
+<tr><td>Low-privilege operator overreach</td><td>admin/viewer enforced server-side; viewers scoped to clusters, folders and host-label selectors; the last admin cannot be removed.</td></tr>
+<tr><td>Malicious repo content</td><td>Trees extracted without symlinks; <code class="mono">source:</code> and app paths cannot leave their folder; git args cannot start with <code class="mono">-</code>; <code class="mono">sensitive: true</code> files never leave the host.</td></tr>
+</tbody>
+</table></div></div>
+
+<h2 id="residual">Known limitations and residual risk</h2>
+<p>Stated so you can decide with eyes open — these are real and intentional-for-now:</p>
+<ul>
+<li><strong>Root on the server reads all sealed secrets.</strong> Vault Transit protects data at rest, not a live compromised server. Lock the server host down.</li>
+<li><strong>A compromised server is a fleet compromise.</strong> There is no second signer between server and host for host manifests.</li>
+<li><strong>The git push token is powerful</strong> — effectively root on every targeted host. Signed-commit verification reduces, but does not eliminate, the value of a stolen push token; branch protection and review are the real controls.</li>
+<li><strong><code class="mono">/metrics</code> is unauthenticated by default.</strong> Set <code class="mono">HOSTCD_METRICS_TOKEN</code> if it is reachable by anyone who should not see fleet topology.</li>
+<li><strong>Auth can be turned off</strong> (<code class="mono">-insecure-no-auth</code> / empty admin password) for demos and loopback use — never expose such an instance to a network.</li>
+<li>Pre-1.0: no per-release security back-ports yet; upgrade to the latest to get a fix.</li>
+</ul>
+
+<h2 id="hardening">Operator hardening checklist</h2>
+<ul>
+<li>Server reachable only over <strong>HTTPS</strong> (<code class="mono">-tls-cert</code>/<code class="mono">-tls-key</code> or a TLS proxy).</li>
+<li>Repo has <strong>branch protection + required review</strong>; <code class="mono">allowed_signers</code> set for signed-commit verification.</li>
+<li><code class="mono">bootstrap.key</code> is <code class="mono">0600</code>, backed up alongside <code class="mono">state.json</code>, and wrapped with <strong>Vault Transit</strong> beyond a single box.</li>
+<li>The <strong>server host is treated as crown-jewels</strong>: minimal access, patched, monitored.</li>
+<li>Per-host agent tokens in use; the shared enrollment token left <strong>unset</strong> once hand-installed agents are gone.</li>
+<li><code class="mono">-agent-mtls</code> enabled if a leaked token must not be enough on its own.</li>
+<li>Operators use <strong>SSO</strong> (OIDC/SAML) and least-privilege viewer scopes; admin password strong and rotated.</li>
+<li>Behind a proxy, set <code class="mono">-trust-proxy</code> and a request-rate limit; set <code class="mono">HOSTCD_METRICS_TOKEN</code> if <code class="mono">/metrics</code> is exposed; ship the <strong>audit trail</strong> somewhere durable.</li>
+</ul>
+
+<hr>
+<p class="muted">Report a vulnerability per the source repository's <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md">SECURITY.md</a>. Related: <a href="/guide/security.html">operator security summary</a> · <a href="/changelog/">security &amp; fix history</a>.</p>
+  </main>
+</div>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/guide/overview.html">Docs</a> · <a href="/changelog/">Changelog</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md" data-track="security">Report a vuln</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>

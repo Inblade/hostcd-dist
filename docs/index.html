@@ -284,6 +284,7 @@
       <a class="navlink" href="#faq">FAQ</a>
       <a class="navlink" href="#resources">Resources</a>
       <a class="navlink" href="/guide/overview.html">Docs</a>
+      <a class="navlink" href="/security/">Security</a>
       <a class="navlink" href="/changelog/">Changelog</a>
       <a class="navlink" href="#contact">Contact</a>
       <a class="ghlink" href="https://github.com/Inblade/hostcd-dist">Downloads</a>
@@ -464,6 +465,28 @@
   </div>
 </section>
 
+<section id="compare" class="wrap" style="max-width:1000px;margin:0 auto;padding:26px 20px 8px">
+  <div class="eyebrow">Why not just Ansible?</div>
+  <h2 style="margin:8px 0 6px">A different problem, honestly</h2>
+  <p style="margin:0 0 16px;color:var(--muted);max-width:70ch">Ansible is a great tool — we used it too. It is push-based and one-shot: you run a playbook, it finishes, and if a config drifts tomorrow it does not know. hostcd is pull-based and continuous: an agent on each host compares live state to the desired state from Git and converges, so drift is detected and repaired without you running anything.</p>
+  <div class="cmp"><div class="scroll"><table>
+    <thead><tr><th>&nbsp;</th><th class="hi">hostcd</th><th>Ansible</th></tr></thead>
+    <tbody>
+      <tr><td>Model</td><td class="val">Pull, continuous reconcile</td><td class="val">Push, batch execution</td></tr>
+      <tr><td>Continuous drift detection</td><td class="yes">✓ built-in</td><td class="no">— external tooling</td></tr>
+      <tr><td>Continuous reconcile</td><td class="yes">✓</td><td class="no">one-shot per run</td></tr>
+      <tr><td>Host-level preview diff</td><td class="yes">✓ first-class</td><td class="no">check mode, limited</td></tr>
+      <tr><td>Rollback to a Git revision</td><td class="yes">✓ first-class</td><td class="no">custom logic</td></tr>
+      <tr><td>Built-in audit trail</td><td class="yes">✓ actor-attributed</td><td class="no">external logging</td></tr>
+      <tr><td>Inbound ports on hosts</td><td class="yes">none (outbound-only)</td><td class="val">none (SSH-based)</td></tr>
+      <tr><td>Agent required</td><td class="val">yes (lightweight)</td><td class="val">no (agentless)</td></tr>
+      <tr><td>Complex provisioning</td><td class="no">— limited</td><td class="yes">✓ strong</td></tr>
+      <tr><td>Ad-hoc orchestration</td><td class="no">— limited</td><td class="yes">✓ strong</td></tr>
+    </tbody>
+  </table></div></div>
+  <p style="margin:14px 0 0;color:var(--muted);max-width:70ch"><strong>They work together.</strong> Many teams use Ansible for provisioning and hostcd for ongoing configuration management — hostcd replaces the cron job or manual <code class="mono">ansible-playbook</code> you run to keep config in sync, not Ansible itself.</p>
+</section>
+
 <section id="editions">
   <div class="wrap">
     <div class="sec-head">
@@ -602,16 +625,11 @@
     <span class="eyebrow">Get started</span>
     <h2>Reconcile your fleet from Git.</h2>
     <p>Install the control plane, enroll a host, point it at a Git repo. Self-hosted and free for your first 10 hosts.</p>
-    <div class="installbox" style="margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px;overflow-x:auto">
-      <div class="eyebrow" style="margin-bottom:9px">Install the control plane · Linux</div>
-      <code class="mono" style="display:block;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--ink)">curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
-  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download sh -s -- server</code>
-    </div>
-    <p class="meta" style="margin-top:12px">Everything installs from <strong>github.com</strong> — the script and the signed binaries are served from GitHub Releases, and every download is checksum-verified — keyless cosign provenance is published and is checked automatically when cosign is installed. Nothing is downloaded from this site, so the install works even where <code class="mono">hostcd.dev</code> is behind a corporate web filter.</p>
-    <details style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)">
-      <summary style="cursor:pointer;font-weight:600">Prefer to verify before running as root? (recommended for production)</summary>
-      <p class="meta" style="margin-top:10px">The one-liner above trusts GitHub’s HTTPS and verifies every downloaded binary against <code class="mono">SHA256SUMS</code>. For a stricter install, fetch the artifacts, verify the checksum file’s cosign signature, check the script, then run it yourself. This pins a specific release (<code class="mono">v0.3.16</code>) for a reproducible production install — change the tag to upgrade:</p>
-      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink);margin-top:8px">base=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.16
+    <p class="meta" style="margin-top:4px">Before you trust hostcd with your infrastructure: every release is <strong>signed</strong> with keyless cosign and <strong>reproducible</strong> (each artifact has a SHA256 checksum). Verify before you run anything as root.</p>
+    <div class="installbox" style="margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px;overflow-x:auto">
+      <div class="eyebrow" style="margin-bottom:9px">Recommended · verify, then install (production) · Linux</div>
+      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink)">HOSTCD_VERSION=v0.3.17
+base=https://github.com/Inblade/hostcd-dist/releases/download/$HOSTCD_VERSION
 curl -fsSLO "$base/install.sh"
 curl -fsSLO "$base/SHA256SUMS"
 curl -fsSLO "$base/SHA256SUMS.cosign.bundle"
@@ -621,7 +639,13 @@ cosign verify-blob SHA256SUMS \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 grep ' install.sh$' SHA256SUMS | sha256sum -c -
 sudo env HOSTCD_RELEASE_BASE="$base" sh ./install.sh server</code>
-      <p class="meta" style="margin-top:8px">Anyone can also read the scheduled <a href="https://github.com/Inblade/hostcd-dist/actions/workflows/verify-release.yml">verify-release</a> runs, which re-check the signature and checksums of the latest release independently of this site.</p>
+    </div>
+    <p class="meta" style="margin-top:12px">This <strong>pins a specific version</strong> for a reproducible install, verifies the checksum file’s cosign provenance against the release-workflow identity, and checks the script — all <strong>before</strong> anything runs as root. Change <code class="mono">HOSTCD_VERSION</code> to upgrade. Everything comes from <strong>github.com</strong> (nothing from this site), so it works even where <code class="mono">hostcd.dev</code> is behind a corporate web filter. Anyone can also read the scheduled <a href="https://github.com/Inblade/hostcd-dist/actions/workflows/verify-release.yml">verify-release</a> runs, which re-check the latest release independently of this site.</p>
+    <details style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)">
+      <summary style="cursor:pointer;font-weight:600">Quick start — one-liner (not recommended for production)</summary>
+      <p class="meta" style="margin-top:10px">Convenient for evaluation: it installs the <strong>latest</strong> release and still verifies every binary against <code class="mono">SHA256SUMS</code> (and cosign provenance when cosign is present), but it does not pin a version or let you check the signature before the script runs. For infrastructure you care about, use the verified, pinned install above.</p>
+      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink);margin-top:8px">curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
+  | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download sh -s -- server</code>
     </details>
     <div class="cta">
       <a class="btn primary" href="https://github.com/Inblade/hostcd-dist#readme">View installation guide ↗</a>
@@ -680,6 +704,7 @@ sudo env HOSTCD_RELEASE_BASE="$base" sh ./install.sh server</code>
     <span>Your Linux fleet, reconciled to Git.</span>
     <span>
       <a href="/guide/overview.html">Docs</a> ·
+      <a href="/security/">Security</a> ·
       <a href="/changelog/">Changelog</a> ·
       <a href="/llms.txt">llms.txt</a> ·
       <a href="https://github.com/Inblade/hostcd-dist">GitHub</a> ·
