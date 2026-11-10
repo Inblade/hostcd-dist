@@ -36,7 +36,8 @@
 <li><strong>Resource kinds:</strong> file (templated), package, service, directory, symlink, mount, sysctl, cron, user, group, apt/yum repositories, ufw rules.</li>
 <li><strong>Package managers:</strong> apt / dnf / yum / zypper (Linux); choco / winget on <strong>Windows (late beta)</strong>. Services via systemd and the Windows SCM.</li>
 <li><strong>Supply chain:</strong> signed releases (keyless cosign), <code class="mono">SHA256SUMS</code>, SBOM; a verified, pinned install path; a public, independent <code class="mono">verify-release</code> check.</li>
-<li><strong>Enterprise (licensed):</strong> SSO (SAML 2.0 / OIDC + SLO), SCIM, approval gates, outbound notifications, audit export (SIEM), Vault Transit sealing.</li>
+<li><strong>Team (licensed):</strong> approval gates, outbound notifications, audit export (SIEM).</li>
+<li><strong>Enterprise (licensed):</strong> everything in Team plus SSO (SAML 2.0 / OIDC + SLO), SCIM, high availability (Postgres multi-replica), Vault Transit sealing.</li>
 <li><strong>Licensing:</strong> offline token, no phone-home; Community core under BSL 1.1; graceful downgrade on lapse (approval gates stay fail-closed).</li>
 </ul>
 
