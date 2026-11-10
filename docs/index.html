@@ -499,7 +499,7 @@
         <ul>
           <li>Everything in Team</li>
           <li>SSO — SAML 2.0 &amp; OIDC · SCIM provisioning</li>
-          <li>Postgres HA · Vault sealing</li>
+          <li>Postgres HA <span class="muted">(preview)</span> · Vault sealing</li>
           <li>SLA support</li>
         </ul>
         <div class="act"><a class="btn ghost" href="#contact">Talk to sales ↗</a></div>
@@ -526,7 +526,7 @@
           <tr><td>Automated audit export / SIEM integration</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td></tr>
           <tr><td>SSO — SAML 2.0 &amp; OIDC</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
           <tr><td>SCIM provisioning</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr><td>Postgres HA · Vault sealing</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Postgres HA (preview) · Vault sealing</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
           <tr><td>Support</td><td class="val">Community</td><td class="val">Email · 2-day target</td><td class="val">SLA</td></tr>
         </tbody>
       </table>
@@ -609,8 +609,8 @@
     <p class="meta" style="margin-top:12px">Everything installs from <strong>github.com</strong> — the script and the signed binaries are served from GitHub Releases, and every download is checksum-verified — keyless cosign provenance is published and is checked automatically when cosign is installed. Nothing is downloaded from this site, so the install works even where <code class="mono">hostcd.dev</code> is behind a corporate web filter.</p>
     <details style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--surface)">
       <summary style="cursor:pointer;font-weight:600">Prefer to verify before running as root? (recommended for production)</summary>
-      <p class="meta" style="margin-top:10px">The one-liner above trusts GitHub’s HTTPS and verifies every downloaded binary against <code class="mono">SHA256SUMS</code>. For a stricter install, fetch the artifacts, verify the checksum file’s cosign signature, check the script, then run it yourself:</p>
-      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink);margin-top:8px">base=https://github.com/Inblade/hostcd-dist/releases/latest/download
+      <p class="meta" style="margin-top:10px">The one-liner above trusts GitHub’s HTTPS and verifies every downloaded binary against <code class="mono">SHA256SUMS</code>. For a stricter install, fetch the artifacts, verify the checksum file’s cosign signature, check the script, then run it yourself. This pins a specific release (<code class="mono">v0.3.16</code>) for a reproducible production install — change the tag to upgrade:</p>
+      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink);margin-top:8px">base=https://github.com/Inblade/hostcd-dist/releases/download/v0.3.16
 curl -fsSLO "$base/install.sh"
 curl -fsSLO "$base/SHA256SUMS"
 curl -fsSLO "$base/SHA256SUMS.cosign.bundle"
