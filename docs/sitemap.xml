@@ -5,6 +5,7 @@
   <url><loc>https://hostcd.dev/reliability/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://hostcd.dev/changelog/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://hostcd.dev/security/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://hostcd.dev/roadmap/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://hostcd.dev/guide/overview.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://hostcd.dev/guide/install.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://hostcd.dev/guide/concepts.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>

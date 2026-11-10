@@ -13,16 +13,35 @@ published before GA**.
 
 ## Install (Linux)
 
-The installer needs root, and it must be told to fetch binaries from this mirror
-(the `HOSTCD_RELEASE_BASE` goes to the installer, not to `curl`):
+**Recommended — pin a version and verify before running as root.** Releases are
+built and signed in the source repository and mirrored here unchanged, so the
+cosign signature and checksum verify independently of this mirror. (The
+`HOSTCD_RELEASE_BASE` goes to the installer, not to `curl`.)
+
+```sh
+HOSTCD_VERSION=v0.3.17          # pin a specific release — see the Releases page for the latest
+base=https://github.com/Inblade/hostcd-dist/releases/download/$HOSTCD_VERSION
+curl -fsSLO "$base/install.sh"
+curl -fsSLO "$base/SHA256SUMS"
+curl -fsSLO "$base/SHA256SUMS.cosign.bundle"
+cosign verify-blob SHA256SUMS \
+  --bundle SHA256SUMS.cosign.bundle \
+  --certificate-identity-regexp '^https://github.com/Inblade/hostcd/\.github/workflows/release\.yml@refs/tags/v.+$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+grep ' install.sh$' SHA256SUMS | sha256sum -c -
+sudo env HOSTCD_RELEASE_BASE="$base" sh ./install.sh server
+```
+
+Swap `server` for `agent https://<control-plane> <TOKEN>` to enroll a managed host.
+
+**Convenience — one-liner (latest, not recommended for production).** It installs
+the latest release and still verifies every binary against `SHA256SUMS`, but it
+does not pin a version or let you check the signature before the script runs:
 
 ```sh
 curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
   | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download sh -s -- server
 ```
-
-Swap `server` for `agent https://<control-plane> <TOKEN>` to enroll a managed host.
-This pins the latest release; to pin a specific version, replace `latest/download` with `download/vX.Y.Z` in both URLs.
 
 ## Verify
 

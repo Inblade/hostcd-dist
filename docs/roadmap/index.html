@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap · hostcd</title>
+<meta name="description" content="Where hostcd is and where it is going — now, next and later. Directional, not commitments; see the changelog for what has actually shipped.">
+<link rel="canonical" href="https://hostcd.dev/roadmap/">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="/changelog/">Changelog</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">Documentation</div>
+    <nav class="sidenav"><a href="/guide/overview.html">Overview</a><a href="/guide/install.html">Install</a><a href="/guide/concepts.html">Concepts</a><a href="/security/">Threat model</a><a href="/changelog/">Changelog</a><a href="/roadmap/" class="active">Roadmap</a></nav>
+    <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
+  </aside>
+  <main class="content">
+<h1>Roadmap</h1>
+<p>Where hostcd is and where it is going. Dates are directional, not commitments — this is a pre-1.0 product and priorities shift with what pilots need. See the <a href="/changelog/">changelog</a> for what has actually shipped.</p>
+
+<h2 id="now">Now — shipped and supported</h2>
+<ul>
+<li><strong>Core reconcile loop:</strong> git-driven drift detection, preview, sync, rollback and an actor-attributed audit trail for Linux hosts, with an outbound-only pull agent (nothing listens on a managed host).</li>
+<li><strong>Resource kinds:</strong> file (templated), package, service, directory, symlink, mount, sysctl, cron, user, group, apt/yum repositories, ufw rules.</li>
+<li><strong>Package managers:</strong> apt / dnf / yum / zypper (Linux); choco / winget on <strong>Windows (late beta)</strong>. Services via systemd and the Windows SCM.</li>
+<li><strong>Supply chain:</strong> signed releases (keyless cosign), <code class="mono">SHA256SUMS</code>, SBOM; a verified, pinned install path; a public, independent <code class="mono">verify-release</code> check.</li>
+<li><strong>Enterprise (licensed):</strong> SSO (SAML 2.0 / OIDC + SLO), SCIM, approval gates, outbound notifications, audit export (SIEM), Vault Transit sealing.</li>
+<li><strong>Licensing:</strong> offline token, no phone-home; Community core under BSL 1.1; graceful downgrade on lapse (approval gates stay fail-closed).</li>
+</ul>
+
+<h2 id="next">Next — in progress / near term</h2>
+<ul>
+<li><strong>External validation.</strong> A first Founding Pilot and an independent, measurable case study (drift caught, auto-repairs, rollback exercised, time saved). This is the current bottleneck — the engineering is ahead of the external proof.</li>
+<li><strong>High availability → GA.</strong> Postgres-backed multi-replica HA (active-active reads, a single elected writer) is an Enterprise <strong>preview</strong> today. To remove "preview": a 24–72&nbsp;h two-node soak, a real restore + standby re-join drill, and documented RTO/RPO.</li>
+<li><strong>Windows → beyond late beta.</strong> Prove the mixed-version upgrade path and the Windows drift / self-heal / rollback story on a live fleet.</li>
+<li><strong>Trust surface.</strong> Keep the closed-source core but widen transparency — a public roadmap (this page), <a href="/security/">security policy &amp; threat model</a>, <a href="/changelog/">changelog</a>, and a feedback channel.</li>
+<li><strong>Harden-by-default guidance.</strong> Make signed-commit verification a documented default for production; surface the <code class="mono">/metrics</code> token and hardening checklist earlier.</li>
+</ul>
+
+<h2 id="later">Later — under consideration</h2>
+<ul>
+<li>HA out of preview with a documented operations runbook and failover SLOs.</li>
+<li>Broader OS coverage and a first-class Windows GA.</li>
+<li>More notification / SIEM integrations and policy controls on the approval gate.</li>
+<li>The BSL 1.1 core converts to <strong>Apache-2.0 on 2030-10-26</strong> (the license change date) regardless of the above.</li>
+</ul>
+
+<h2 id="not-planned">Not planned</h2>
+<ul>
+<li><strong>Agent-side fencing tokens</strong> (a monotonic leadership term pushed to agents). Evaluated and rejected for this architecture: agents are pull-only and every mutating request is already forwarded to the single elected leader, with the store's CAS version as the backstop — an agent-side term would be the wrong layer. See the <a href="/security/">threat model</a> for the HA trust model.</li>
+</ul>
+
+<hr>
+<p class="muted">Have a need that should be on this list? <a href="/#contact">Tell us</a>. What has shipped is in the <a href="/changelog/">changelog</a>.</p>
+  </main>
+</div>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/changelog/">Changelog</a> · <a href="/security/">Security</a> · <a href="https://github.com/Inblade/hostcd-dist">GitHub</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>

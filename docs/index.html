@@ -286,6 +286,7 @@
       <a class="navlink" href="/guide/overview.html">Docs</a>
       <a class="navlink" href="/security/">Security</a>
       <a class="navlink" href="/changelog/">Changelog</a>
+      <a class="navlink" href="/roadmap/">Roadmap</a>
       <a class="navlink" href="#contact">Contact</a>
       <a class="ghlink" href="https://github.com/Inblade/hostcd-dist">Downloads</a>
       <button class="iconbtn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
@@ -591,6 +592,7 @@
       <div class="qa"><h3>What happens when the Team trial ends?</h3><p>Nothing is deleted. You keep up to 10 active hosts that keep reconciling; you choose which ones. Hosts above the Community limit stay visible and keep enforcing the revision they last accepted — hostcd still corrects drift back to that configuration — but they receive no newer Git revisions until a license is installed or a Community slot is freed.</p></div>
       <div class="qa"><h3>Does a lapsed license lock me out?</h3><p>No. A lapse never deletes data or stops the control plane. After the grace period, hosts above the Community limit stay visible and keep enforcing the revision they last accepted — hostcd still corrects drift back to it — but they receive no newer Git revisions until a license is installed or a slot is freed. Backup, full data export, the audit trail, local admin login and license installation stay available — always. (Automated audit integrations are the Team feature, not access to your own data.)</p></div>
       <div class="qa"><h3>Is licensing really offline?</h3><p>Yes. License tokens are signed and verified locally against an embedded key — there is no phone-home, so air-gapped deployments work the same.</p></div>
+      <div class="qa"><h3>Is <code class="mono">/metrics</code> authenticated?</h3><p>Not by default — the Prometheus endpoint is open so scraping works out of the box. On an untrusted network set <code class="mono">-metrics-token</code> (or <code class="mono">HOSTCD_METRICS_TOKEN</code>) to require a bearer token; the Security &amp; Trust screen flags when it is left open. This is documented as a residual risk in the <a href="/security/">threat model</a>.</p></div>
       <div class="qa"><h3>Which operating systems are supported?</h3><p>Ubuntu/Debian and RHEL/Rocky, tested and supported. The Windows Server agent is in <b>late beta</b> — validated live on Windows Server 2025 (packages, files, and services via the SCM), with continuous drift and soak testing still to come. <a href="https://github.com/Inblade/hostcd-dist#readme">See the docs</a> for exactly what is and isn’t proven yet.</p></div>
       <div class="qa"><h3>What is the licence?</h3><p>The Community core is licensed under the Business Source License 1.1, which converts to Apache-2.0 on its change date. The public release ships signed binaries with cosign provenance and an SBOM you can verify independently. The core source repository is not public today. Enterprise modules are gated by a signed key.</p></div>
       <div class="qa"><h3>What do I actually run?</h3><p>A single control plane for the fleet and one lightweight agent per host — static binaries a small team can operate. Your desired state stays in your own Git repository.</p></div>
@@ -706,6 +708,7 @@ sudo env HOSTCD_RELEASE_BASE="$base" sh ./install.sh server</code>
       <a href="/guide/overview.html">Docs</a> ·
       <a href="/security/">Security</a> ·
       <a href="/changelog/">Changelog</a> ·
+      <a href="/roadmap/">Roadmap</a> ·
       <a href="/llms.txt">llms.txt</a> ·
       <a href="https://github.com/Inblade/hostcd-dist">GitHub</a> ·
       <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md">Security</a> ·
