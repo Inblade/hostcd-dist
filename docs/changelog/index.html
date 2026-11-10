@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changelog · hostcd</title>
+<meta name="description" content="Public record of every hostcd release — what was found and how it was fixed, from the first public release onward. Every release is signed (SHA256SUMS + keyless cosign) and independently verifiable.">
+<link rel="canonical" href="https://hostcd.dev/changelog/">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="https://github.com/Inblade/hostcd-dist/releases">Releases ↗</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">Documentation</div>
+    <nav class="sidenav"><a href="/guide/overview.html">Overview</a><a href="/guide/install.html">Install</a><a href="/guide/concepts.html">Concepts</a><a href="/guide/security.html">Security</a><a href="/guide/operations.html">Operations</a><a href="/changelog/" class="active">Changelog</a></nav>
+    <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
+  </aside>
+  <main class="content">
+<h1>Changelog — issues &amp; fixes</h1>
+<p>This is the public record of every hostcd release: what was found and how it was fixed, from the first public release onward. The core source is not public yet, so this page — alongside the signed <a href="https://github.com/Inblade/hostcd-dist/releases">GitHub Releases</a> — is how you can see the track record before trusting the tool with root on your servers.</p>
+<p class="muted">Every release ships a <code class="mono">SHA256SUMS</code> signed with <strong>keyless cosign</strong> (GitHub OIDC → Fulcio → Rekor; no private key in CI) and an SBOM. The public mirror is <em>not</em> re-signed, so artifacts stay independently verifiable against the source workflow's identity — see <a href="/guide/install.html">verify-before-install</a>. Dates are UTC.</p>
+
+<h2 id="in-progress">In progress</h2>
+<ul>
+<li><strong>Per-host token for SSH-less hosts.</strong> An admin endpoint to mint a per-host agent token for an existing host that has no SSH path (a Windows agent, or an air-gapped host), so it can be moved off the shared enrollment token and the shared token revoked. Merged; ships in the next release.</li>
+</ul>
+
+<h2 id="v0316">v0.3.16 — 2026-11-09 · reliability &amp; HA hardening</h2>
+<ul>
+<li><strong>Fixed a reload-path crash (denial of service).</strong> A configuration reload that produced an empty result set could panic the server; reload is now nil-safe.</li>
+<li><strong><code class="mono">/metrics</code> no longer holds a lock across network I/O</strong>, closing a lock-contention/DoS window. On an untrusted network, protect the endpoint with <code class="mono">-metrics-token</code> (it is unauthenticated by default).</li>
+<li><strong>HA: no more split-brain window on a lease fault.</strong> A leader now demotes <em>fail-closed</em> on a failed lease acquire/renew instead of holding leadership until a later success. In-flight leader work is cancelled the moment leadership is lost (a leader context), so a demoted node cannot keep applying to clusters, committing state, or emitting notifications as an ex-leader.</li>
+<li><strong>HA: standby catches up after a database blip.</strong> A standby reloads its cache after a <code class="mono">LISTEN</code> reconnect, so a change committed during a brief outage is no longer missed. Write-forwarding to the leader trusts a configurable peer CA (<code class="mono">-peer-ca</code>) for self-signed peer TLS and fails closed, never skipping verification.</li>
+<li><strong>Agent-version safety.</strong> The server refuses a server-side install that would <em>downgrade</em> a host's agent (stale <code class="mono">-agent-dist</code> guard), the installer can auto-populate the agent distribution in lockstep with the server version, and the host drawer shows server / hosted / installed agent versions and flags drift.</li>
+<li>Closed test gaps (resource, engine, git source, license removal) and added an SSO embedded-key end-to-end check in CI. Docs: "active-active HA" clarified to <em>active-active reads with a single elected writer</em>.</li>
+</ul>
+
+<h2 id="v0315">v0.3.15 — 2026-11-08 · security release</h2>
+<ul>
+<li><strong>High — label-scope bypass fixed.</strong> A per-host agent token could read another scope's secret-bearing manifest by reporting crafted labels. Destination matching now uses <strong>admin-assigned</strong> labels only, frozen after enrolment and persisted across restart and HA, so a compromised host token cannot relabel itself into another scope. Upgrading is recommended.</li>
+<li><strong>Medium —</strong> <code class="mono">GET /api/audit</code> is now admin-only (was readable by scoped viewers).</li>
+<li><strong>Low —</strong> <code class="mono">GET /api/events</code> (SSE) no longer leaks out-of-scope resource names to scoped viewers.</li>
+<li>Resource exec sinks reject option-injection in package / service / user / group names.</li>
+<li>Desktop: <code class="mono">tokio</code> → 1.54.1 and <code class="mono">cargo-audit</code> now runs in required CI.</li>
+<li>Windows agent is published in releases (late beta) with a Windows install guide.</li>
+</ul>
+
+<h2 id="v0314">v0.3.14 — 2026-11-07</h2>
+<ul>
+<li><strong>Dependency security:</strong> bumped <code class="mono">golang.org/x/oauth2</code> to v0.27.0 (CVE-2025-22868).</li>
+<li>Documentation reconciled (monthly pricing, trial window, lapse behaviour, feature ownership) with a consistency guard in CI; public release notes are now self-contained (private source links stripped).</li>
+</ul>
+
+<h2 id="v0313">v0.3.13 — 2026-11-06</h2>
+<ul>
+<li><strong>Fixed a misleading package error.</strong> When an <code class="mono">apt-get update</code> during a package apply failed (for example on an end-of-life release whose repositories moved), the real error was swallowed and surfaced as "unable to locate package". Both errors are now shown, with an apt-sources hint.</li>
+<li><strong>UI:</strong> an automated-only application showed "No sync yet"; it now shows the latest sync from history.</li>
+</ul>
+
+<h2 id="v0312">v0.3.12 — 2026-11-06</h2>
+<ul>
+<li>UX: noisy <code class="mono">login</code> events collapse behind a toggle in Activity; the sidebar shows a loading placeholder instead of <code class="mono">0/0</code> before the first load.</li>
+</ul>
+
+<h2 id="v0311">v0.3.11 — 2026-11-06</h2>
+<ul>
+<li><strong>Self-update hardened fail-closed.</strong> The opt-in one-click updater now <em>requires</em> cosign (no HTTPS-only fallback) and refuses to proceed if <code class="mono">latest</code> cannot be resolved to a concrete release tag — it never follows a moving target.</li>
+</ul>
+
+<h2 id="v0310">v0.3.10 — 2026-11-05</h2>
+<ul>
+<li>Fixed a self-update helper parsing failure (a shell exit-127 on the installer exec line).</li>
+</ul>
+
+<h2 id="v039">v0.3.9 — 2026-11-05</h2>
+<ul>
+<li><strong>Fixed one-click self-update.</strong> The update is now triggered through a root systemd <code class="mono">.path</code> unit (the server runs with <code class="mono">NoNewPrivileges</code>, which blocked the previous <code class="mono">sudo</code> path), and the helper no longer overwrites itself mid-run.</li>
+</ul>
+
+<h2 id="v038">v0.3.8 — 2026-11-05</h2>
+<ul>
+<li><strong>Self-update verifies before running as root.</strong> The helper now checks the installer's <em>own</em> cosign provenance and checksum against the signed <code class="mono">SHA256SUMS</code> before executing it, and pins one resolved release tag. The real changelog is mirrored into the public release notes.</li>
+</ul>
+
+<h2 id="v037">v0.3.7 — 2026-11-05</h2>
+<ul>
+<li>The self-update capability is surfaced on the API so the "Update now" button renders when an update is available.</li>
+</ul>
+
+<h2 id="v036">v0.3.6 — 2026-11-05</h2>
+<ul>
+<li>The running version is shown in the sidebar; an opt-in one-click update button was added.</li>
+</ul>
+
+<h2 id="v035">v0.3.5 — 2026-11-05</h2>
+<ul>
+<li><strong>Fixed a silent agent lockout.</strong> Install-over-SSH enabled but did not restart an already-running agent, so after a token rotation a host could keep using its old token and drop offline (401) on a later server restart. The agent is now restarted on install.</li>
+</ul>
+
+<h2 id="v034">v0.3.4 — 2026-11-05</h2>
+<ul>
+<li>Added an update checker and in-app "what's new"; fixed an application-view crash when an app matched zero hosts; status highlighting in the UI.</li>
+</ul>
+
+<h2 id="v032">v0.3.2 — 2026-11-03</h2>
+<ul>
+<li>Release-pipeline and packaging hardening following the public launch (signed-tag release authorization, reproducible signed artifacts), validated with live installs on fresh VMs.</li>
+</ul>
+
+<h2 id="v031">v0.3.1 — 2026-11-03</h2>
+<ul>
+<li>Packaging and install-path fixes following the first public release.</li>
+</ul>
+
+<h2 id="v030">v0.3.0 — 2026-11-03 · first public release</h2>
+<ul>
+<li>First public install channel: signed binaries with <code class="mono">SHA256SUMS</code>, keyless cosign provenance and an SBOM. Outbound-only pull agent (nothing listens on a managed host), git-driven drift detection, preview, sync, rollback and an audit trail for plain Linux servers — without Kubernetes.</li>
+</ul>
+
+<hr>
+<p class="muted">Found something that should be here, or a security issue? See the source repository's <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md">SECURITY.md</a> for how to report it. Every release and its signature live under <a href="https://github.com/Inblade/hostcd-dist/releases">Releases</a>.</p>
+  </main>
+</div>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/guide/overview.html">Docs</a> · <a href="https://github.com/Inblade/hostcd-dist/releases" data-track="releases">Releases</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/SECURITY.md" data-track="security">Security</a> · <a href="https://github.com/Inblade/hostcd-dist/blob/main/LICENSE">BSL 1.1</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>
