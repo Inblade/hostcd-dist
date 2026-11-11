@@ -33,7 +33,12 @@
 
 <h2 id="in-progress">In progress</h2>
 <ul>
-<li><strong>Per-host token for SSH-less hosts.</strong> An admin endpoint to mint a per-host agent token for an existing host that has no SSH path (a Windows agent, or an air-gapped host), so it can be moved off the shared enrollment token and the shared token revoked. Merged; ships in the next release.</li>
+<li>Nothing unreleased right now — see the <a href="/roadmap/">roadmap</a> for what is planned next.</li>
+</ul>
+
+<h2 id="v0317">v0.3.17 — 2026-11-10 · SSH-less enrollment</h2>
+<ul>
+<li><strong>Mint a per-host agent token for an existing host.</strong> A new admin-only, audited endpoint mints (or rotates) a per-host agent token for a host with no SSH path — a Windows agent, or an air-gapped host — so it can be moved off the shared enrollment token and that shared token revoked. The new token is persisted before it is returned and shown once; minting invalidates the host's previous token immediately, so the agent is briefly offline until it is reconfigured with the new token.</li>
 </ul>
 
 <h2 id="v0316">v0.3.16 — 2026-11-09 · reliability &amp; HA hardening</h2>
