@@ -21,7 +21,7 @@ cosign signature and checksum verify independently of this mirror. (The
 `HOSTCD_RELEASE_BASE` goes to the installer, not to `curl`.)
 
 ```sh
-HOSTCD_VERSION=v0.3.18          # pin a specific release — see the Releases page for the latest
+HOSTCD_VERSION=v0.3.19          # pin a specific release — see the Releases page for the latest
 base=https://github.com/Inblade/hostcd-dist/releases/download/$HOSTCD_VERSION
 curl -fsSLO "$base/install.sh"
 curl -fsSLO "$base/SHA256SUMS"
