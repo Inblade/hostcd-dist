@@ -12,7 +12,7 @@ The folder contains manifests describing desired system state. hostcd renders th
 
 ## Resource kinds
 
-A manifest declares resources. The system kinds include **packages**, **files** (static or Go-templated), **services**, **users**, **groups**, **directories**, **symlinks**, **cron jobs**, **sysctl** settings, **mounts**, **apt repositories**, and **ufw rules**. Templated files use host facts (`.Hostname`, `.OSID`, `.OSVersion`, `.OSFamily`) and labels (`.Labels.<key>`), and a `notify:` on a file restarts a service when the file changes.
+A manifest declares resources. The system kinds include **packages**, **files** (static or Go-templated), **services**, **users**, **groups**, **directories**, **symlinks**, **cron jobs**, **sysctl** settings, **mounts**, **apt repositories**, **ufw rules**, and **nvidia_gpu** (GPU bare-metal: the NVIDIA datacenter driver, the DCGM host engine, and the DCGM Prometheus exporter on `:9400`, from one resource). Templated files use host facts (`.Hostname`, `.OSID`, `.OSVersion`, `.OSFamily`) and labels (`.Labels.<key>`), and a `notify:` on a file restarts a service when the file changes.
 
 ![hostcd application detail for nginx showing an Out-of-sync status and a resource tree that expands the app into three hosts, each with its nginx package, config files (one marked content-differs), and the nginx service, with Sync, Refresh, Pending changes and History/rollback actions](../screenshots/app-resource-tree.jpg)
 

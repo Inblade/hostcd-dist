@@ -429,7 +429,7 @@
     </div>
 
     <div class="steps" style="margin-top:28px">
-      <div class="step"><div class="n">01</div><h3>Declare</h3><p>An app points at a Git folder and a set of hosts — packages, files, services, users, cron and more.</p></div>
+      <div class="step"><div class="n">01</div><h3>Declare</h3><p>An app points at a Git folder and a set of hosts — packages, files, services, users, cron, GPU stacks and more.</p></div>
       <div class="step"><div class="n">02</div><h3>Render</h3><p>One standalone control plane renders the desired state per host and tracks every revision.</p></div>
       <div class="step"><div class="n">03</div><h3>Reconcile</h3><p>Each agent dials out over HTTPS, pulls its manifest and applies it. Nothing inbound on the host.</p></div>
       <div class="step"><div class="n">04</div><h3>Observe</h3><p>Drift shows as a diff. Sync, roll back or prune from the web UI, with a full audit trail.</p></div>
@@ -596,6 +596,7 @@
       <div class="qa"><h3>Is licensing really offline?</h3><p>Yes. License tokens are signed and verified locally against an embedded key — there is no phone-home, so air-gapped deployments work the same.</p></div>
       <div class="qa"><h3>Is <code class="mono">/metrics</code> authenticated?</h3><p>It depends how you start it. The <b>official <code class="mono">install.sh</code> generates a <code class="mono">HOSTCD_METRICS_TOKEN</code> on a fresh install</b> (v0.3.18+), so a server set up with the installer requires a bearer token by default — delete that line in <code class="mono">server.env</code> to open it on a trusted network. A server started <b>manually</b> without a token leaves <code class="mono">/metrics</code> open so scraping works out of the box; set <code class="mono">-metrics-token</code> (or <code class="mono">HOSTCD_METRICS_TOKEN</code>) yourself on an untrusted network. The Security &amp; Trust screen flags when it is left open, and it is documented as a residual risk in the <a href="/security/">threat model</a>.</p></div>
       <div class="qa"><h3>Which operating systems are supported?</h3><p>Ubuntu/Debian and RHEL/Rocky, tested and supported. The Windows Server agent is in <b>late beta</b> — validated live on Windows Server 2025 (packages, files, and services via the SCM), with continuous drift and soak testing still to come. <a href="https://github.com/Inblade/hostcd-dist#readme">See the docs</a> for exactly what is and isn’t proven yet.</p></div>
+      <div class="qa"><h3>Can it set up GPU hosts?</h3><p>Yes — the <code class="mono">nvidia_gpu</code> resource converges a GPU bare-metal host from Git in one declaration: the NVIDIA datacenter driver (<code class="mono">nvidia-smi</code>), the DCGM host engine and the DCGM Prometheus exporter on <code class="mono">:9400</code>. Point Prometheus at <code class="mono">&lt;host&gt;:9400</code>. Works on Ubuntu/Debian and RHEL/Rocky from the same declaration.</p></div>
       <div class="qa"><h3>What is the licence?</h3><p>The Community core is licensed under the Business Source License 1.1, which converts to Apache-2.0 on its change date. The public release ships signed binaries with cosign provenance and an SBOM you can verify independently. The core source repository is not public today. Enterprise modules are gated by a signed key.</p></div>
       <div class="qa"><h3>What do I actually run?</h3><p>A single control plane for the fleet and one lightweight agent per host — static binaries a small team can operate. Your desired state stays in your own Git repository.</p></div>
     </div>
@@ -632,7 +633,7 @@
     <p class="meta" style="margin-top:4px">Before you trust hostcd with your infrastructure: every release is <strong>signed</strong> with keyless cosign and <strong>reproducible</strong> (each artifact has a SHA256 checksum). Verify before you run anything as root.</p>
     <div class="installbox" style="margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px;overflow-x:auto">
       <div class="eyebrow" style="margin-bottom:9px">Recommended · verify, then install (production) · Linux</div>
-      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink)">HOSTCD_VERSION=v0.3.17
+      <code class="mono" style="display:block;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--ink)">HOSTCD_VERSION=v0.3.18
 base=https://github.com/Inblade/hostcd-dist/releases/download/$HOSTCD_VERSION
 curl -fsSLO "$base/install.sh"
 curl -fsSLO "$base/SHA256SUMS"
