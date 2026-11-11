@@ -8,6 +8,8 @@ Kubernetes. The Community core is licensed under the Business Source License 1.1
 published before GA**.
 
 - **Landing page:** https://hostcd.dev
+- **Live demo:** https://demo.hostcd.dev — an anonymous, read-only 5-host fleet
+  with a live drift scenario; synthetic data, resets every 30 minutes.
 - **Releases (binaries, `install.sh`, `SHA256SUMS`, cosign bundle, SBOM):** see the
   [Releases](https://github.com/Inblade/hostcd-dist/releases) tab.
 
