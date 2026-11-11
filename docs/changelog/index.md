@@ -3,6 +3,25 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.19] — 2026-11-11
+### Added
+- **`nvidia_gpu` resource kind** — converge a GPU bare-metal host to the full
+  NVIDIA monitoring stack from Git in one declaration: the datacenter driver
+  (which provides `nvidia-smi`), the DCGM host engine (`nvidia-dcgm`) and the DCGM
+  Prometheus exporter (`nvidia-dcgm-exporter`, serving `/metrics` on `:9400`). The
+  package names are identical on apt and dnf, so the same declaration works on
+  Ubuntu/Debian and RHEL/Rocky; pair it with a CUDA `apt_repository` /
+  `yum_repository` for the packages to install from, then point Prometheus at
+  `<host>:9400`. Knobs: `cuda_major` (default `"12"`), `driver` (default on),
+  `state` present|absent. Health reports Degraded if the DCGM engine or exporter
+  is down, so a crashlooping unit is not reported healthy. See
+  `examples/repo/groups/gpu/nvidia.yaml`.
+### Changed
+- The public site now stays in lockstep with releases automatically: the
+  `hostcd.dev` changelog page is generated from this file and the pinned install
+  version on the landing and README is bumped on every release, so neither drifts
+  from the shipped version again.
+
 ## [0.3.18] — 2026-11-11
 ### Added
 - **Read-only mode** (`-read-only`) — the server refuses every mutating request

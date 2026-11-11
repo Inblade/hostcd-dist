@@ -33,8 +33,30 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to hostcd are documented here. This project uses date-based
 <code>vMAJOR.MINOR.PATCH</code> tags; security releases are called out explicitly.</p>
-<h2 id="0318--2026-11-11">[0.3.18] — 2026-11-11</h2>
+<h2 id="0319--2026-11-11">[0.3.19] — 2026-11-11</h2>
 <h3 id="added">Added</h3>
+<ul>
+<li><strong><code>nvidia_gpu</code> resource kind</strong> — converge a GPU bare-metal host to the full
+NVIDIA monitoring stack from Git in one declaration: the datacenter driver
+(which provides <code>nvidia-smi</code>), the DCGM host engine (<code>nvidia-dcgm</code>) and the DCGM
+Prometheus exporter (<code>nvidia-dcgm-exporter</code>, serving <code>/metrics</code> on <code>:9400</code>). The
+package names are identical on apt and dnf, so the same declaration works on
+Ubuntu/Debian and RHEL/Rocky; pair it with a CUDA <code>apt_repository</code> /
+<code>yum_repository</code> for the packages to install from, then point Prometheus at
+<code>&lt;host&gt;:9400</code>. Knobs: <code>cuda_major</code> (default <code>&quot;12&quot;</code>), <code>driver</code> (default on),
+<code>state</code> present|absent. Health reports Degraded if the DCGM engine or exporter
+is down, so a crashlooping unit is not reported healthy. See
+<code>examples/repo/groups/gpu/nvidia.yaml</code>.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>The public site now stays in lockstep with releases automatically: the
+<code>hostcd.dev</code> changelog page is generated from this file and the pinned install
+version on the landing and README is bumped on every release, so neither drifts
+from the shipped version again.</li>
+</ul>
+<h2 id="0318--2026-11-11">[0.3.18] — 2026-11-11</h2>
+<h3 id="added-1">Added</h3>
 <ul>
 <li><strong>Read-only mode</strong> (<code>-read-only</code>) — the server refuses every mutating request
 with a clean JSON <code>403</code> and advertises <code>readOnly:true</code> in the session, while the
@@ -73,7 +95,7 @@ runbook for moving an SSH-less Windows agent to a per-host token; a top-level
 (approval gates / notifications / audit export are Team, not Enterprise).</li>
 </ul>
 <h2 id="0317--2026-11-10">[0.3.17] — 2026-11-10</h2>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li><strong>Mint a per-host agent token for an existing host</strong> — <code>POST /api/hosts/{name}/token</code>
 (admin-only, audited). Per-host tokens were previously minted only by
@@ -114,7 +136,7 @@ nothing has been written yet; an undeliverable forward returns <code>503</code> 
 <li>The server <strong>refuses a server-side install from a stale <code>-agent-dist</code></strong>
 (prevents a silent agent downgrade) and warns at startup on a version mismatch.</li>
 </ul>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li><code>deploy/install.sh</code> can <strong>auto-populate <code>-agent-dist</code></strong> with cosign/SHA256SUMS-
 verified agents in lockstep with the server version (opt-in via
@@ -144,7 +166,7 @@ scoped viewers.</li>
 package/service/user/group names.</li>
 <li>Desktop: <code>tokio</code> → 1.54.1; <code>cargo-audit</code> now runs in required CI.</li>
 </ul>
-<h3 id="added-3">Added</h3>
+<h3 id="added-4">Added</h3>
 <ul>
 <li>Windows agent <code>hostcd-agent-windows-amd64.exe</code> published in releases (late beta;
 <code>package</code>/<code>file</code>/<code>service</code>). See <code>docs/WINDOWS.md</code>.</li>
@@ -160,7 +182,7 @@ release notes.</li>
 <ul>
 <li>Bumped <code>golang.org/x/oauth2</code> to v0.27.0 (CVE-2025-22868).</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed-1">Changed</h3>
 <ul>
 <li>Licensing docs reconciled to monthly pricing and the honest source-availability
 status; added CI docs-consistency and site-consistency guards.</li>
