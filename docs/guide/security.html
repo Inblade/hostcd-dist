@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/assets/docs.css">
 <!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
-     Replace 7e4e2eb4b4164e1ba5f8d4ea0212b83e with the token from the Cloudflare dashboard
+     Replace e77be28dc0594881be0722db362acecd with the token from the Cloudflare dashboard
      (Analytics & Logs → Web Analytics). Until then this loads nothing useful but is harmless. -->
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "e77be28dc0594881be0722db362acecd"}'></script>
 </head>
 <body>
 <header class="topbar">
@@ -30,29 +30,29 @@
     <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
   </aside>
   <main class="content">
-<h1>hostcd — security model</h1>
+<h1 id="hostcd--security-model">hostcd — security model</h1>
 <p>hostcd is built so that managing a fleet does not widen its attack surface. The full policy and threat model live in the source repository's <code>SECURITY.md</code>; this is the operator-facing summary.</p>
-<h2>Trust boundaries</h2>
+<h2 id="trust-boundaries">Trust boundaries</h2>
 <ul>
 <li><strong>Hosts only dial out.</strong> The agent long-polls the server over HTTPS. Nothing listens on a managed host — there is no inbound SSH requirement and no open agent port.</li>
 <li><strong>Per-host agent tokens.</strong> Install-over-SSH mints a fresh random token per host (stored as a digest server-side). A host's token authenticates only that host; revoking one does not affect others.</li>
 <li><strong>TOFU host keys.</strong> SSH host keys are pinned on first use for install-over-SSH.</li>
 <li><strong>Optional agent mTLS.</strong> <code>-agent-mtls</code> adds a per-host client certificate (P-256 CA) on top of the bearer token.</li>
 </ul>
-<h2>Control-plane auth</h2>
+<h2 id="control-plane-auth">Control-plane auth</h2>
 <ul>
 <li>UI/API sign-in is bcrypt with lockout; sessions are cookie-based and <code>SameSite=Strict</code>, and every state-changing request must be <code>Content-Type: application/json</code> (a CSRF guard).</li>
 <li>Users are <strong>admin</strong> or <strong>viewer</strong>, optionally scoped by cluster, folder, or host labels.</li>
 <li>Enterprise adds <strong>SSO</strong> (SAML 2.0 and OIDC, with single logout) and <strong>SCIM</strong> provisioning.</li>
 </ul>
-<h2>Secrets</h2>
+<h2 id="secrets">Secrets</h2>
 <p>The data-encryption key seals secrets in the server state with AES-256-GCM. For defence in depth, Enterprise can wrap it with <strong>Vault Transit</strong> instead of keeping a local key.</p>
-<h2>Supply chain</h2>
+<h2 id="supply-chain">Supply chain</h2>
 <p>Releases are built and signed in CI with <strong>keyless cosign</strong> (no private key in CI) and a published <code>SHA256SUMS</code> + SBOM. The public mirror is not re-signed, so artifacts stay independently verifiable against the source workflow's identity. See <a href="install.md">install</a> for the verify command.</p>
-<h2>Self-update is fail-closed</h2>
+<h2 id="self-update-is-fail-closed">Self-update is fail-closed</h2>
 <p>The opt-in one-click updater runs as root, unattended, so it is strict: it <strong>requires cosign</strong> (no HTTPS-only fallback), <strong>pins one concrete release tag</strong> (and aborts rather than follow a moving <code>latest</code>), and verifies the installer's <strong>own</strong> checksum and provenance <strong>before</strong> running it. It never escalates privilege from the server (which runs with <code>NoNewPrivileges</code>): the server writes a trigger file and a root systemd <code>.path</code> unit runs the update.</p>
 <p><img src="../screenshots/security-trust.jpg" alt="hostcd Security &amp; Trust screen listing posture findings (commit signatures not verified, agent mTLS off, secrets sealed with a local key, metrics endpoint open), summary tiles, a trust-configuration table, and recent security activity"></p>
-<h2>Posture surfaced in the UI</h2>
+<h2 id="posture-surfaced-in-the-ui">Posture surfaced in the UI</h2>
 <p>The <strong>Security &amp; Trust</strong> screen scores the live posture — commit-signature verification, agent mTLS, secret sealing, state integrity, SSO/SCIM, and whether the metrics endpoint is open — so you can see at a glance what is on and what to harden next. <code>-verify</code> requires signed commits from allowed keys; <code>-metrics-token</code> protects <code>/metrics</code> on an untrusted network.</p>
 <p>Report vulnerabilities per the source repository's <code>SECURITY.md</code>. Next: <a href="overview.md">overview</a> · <a href="operations.md">operations</a>.</p>
 

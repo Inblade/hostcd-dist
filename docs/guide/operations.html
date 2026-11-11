@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/assets/docs.css">
 <!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
-     Replace 7e4e2eb4b4164e1ba5f8d4ea0212b83e with the token from the Cloudflare dashboard
+     Replace e77be28dc0594881be0722db362acecd with the token from the Cloudflare dashboard
      (Analytics & Logs → Web Analytics). Until then this loads nothing useful but is harmless. -->
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "e77be28dc0594881be0722db362acecd"}'></script>
 </head>
 <body>
 <header class="topbar">
@@ -30,11 +30,13 @@
     <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
   </aside>
   <main class="content">
-<h1>hostcd — operations (day two)</h1>
-<h2>Upgrades</h2>
+<h1 id="hostcd--operations-day-two">hostcd — operations (day two)</h1>
+<h2 id="upgrades">Upgrades</h2>
 <p>hostcd upgrades server-first: upgrade <code>hostcd-server</code>, then the agents. The protocol is version-compatible across a release, so a newer server speaks to older agents during a rollout. Re-running the installer swaps the binary and restarts the unit.</p>
 <p>Upgrade an agent by re-running the agent install (or swapping the verified binary and <code>systemctl restart hostcd-agent</code>); the token in <code>/etc/hostcd/agent.env</code> is preserved, so there is no re-enrolment.</p>
-<h2>One-click self-update (opt-in)</h2>
+<h2 id="per-host-agent-tokens-ssh-less-hosts">Per-host agent tokens (SSH-less hosts)</h2>
+<p>Install-over-SSH mints a per-host token automatically, so each Linux host authenticates with its own token and can be revoked on its own. A host with no SSH path — a Windows agent, or an air-gapped host — enrols with the shared token instead. From <strong>v0.3.17</strong> you can move it onto a per-host token: mint one with <code>POST /api/hosts/{name}/token</code> (admin), set it in the agent's config, and restart the agent. The token is returned once and the host's previous token stops working immediately, so set it promptly. Once every host has a per-host token you can retire the shared token. For the exact Windows (RDP) steps see the Windows guide.</p>
+<h2 id="one-click-self-update-opt-in">One-click self-update (opt-in)</h2>
 <p>Because the server runs unprivileged it cannot replace its own binary, so one-click update is <strong>off by default</strong>. Enable it at install time with <code>HOSTCD_SELF_UPDATE=1</code> (cosign must be installed on the host — it is mandatory for the unattended root updater). This adds:</p>
 <ul>
 <li>a root <code>hostcd-update.service</code> oneshot that re-runs the signed installer;</li>
@@ -42,13 +44,24 @@
 <li><code>HOSTCD_UPDATE_COMMAND</code> in <code>server.env</code>.</li>
 </ul>
 <p>With it enabled, the UI shows the running version in the sidebar, a <strong>What's new</strong> panel with the release notes, and an <strong>Update now</strong> button. Clicking it pins the latest tag, verifies the installer's cosign provenance and checksum, swaps the binary, and restarts — the UI waits and reloads on the new version. The manual install command stays available either way.</p>
-<h2>Backup and restore</h2>
-<p>The <strong>Backup</strong> screen exports the full server state (applications, hosts, projects, users, settings) to a file, and restores from one. Keep a periodic export; the Recovery screen shows when the last export ran.</p>
-<h2>High availability (Enterprise)</h2>
+<h2 id="backup-and-restore">Backup and restore</h2>
+<p>Use two layers together.</p>
+<p><strong>In-app export.</strong> The <strong>Backup</strong> screen exports the full declarative state (applications, hosts, projects, users, settings) to a file and restores from one; the Recovery screen shows when the last export ran. This file carries no secrets, so it is safe to store anywhere — but on its own it cannot unseal sealed data (SSH keys, webhook and audit-sink secrets).</p>
+<p><strong>Filesystem snapshot (full recovery).</strong> To stand a control plane back up exactly as it was — sealed secrets included — back up the data directory and the seal key together:</p>
+<ul>
+<li><code>state.json</code> — the full state</li>
+<li><code>bootstrap.key</code> — the AES-256-GCM seal key. <strong>Without it the sealed secrets cannot be decrypted.</strong></li>
+<li><code>session.key</code>, <code>audit.json</code> — session signing and the audit trail</li>
+<li><code>server.env</code> and your TLS cert/key — to restart with the same identity</li>
+</ul>
+<p>Because that key decrypts everything, treat the snapshot like a secret: keep it <code>0600</code>, encrypt it in transit and at rest, and store it <strong>off-box</strong> — a snapshot that lives only on the server it protects does not survive losing that server.</p>
+<p>An hourly systemd timer whose service does a copy-then-tar of the files above into a root-<code>0600</code> tarball (rotating the newest N) gives a point-in-time backup; replicate it off-box on the same cadence. The file store persists on every mutation, so each snapshot is internally consistent and the <strong>RPO equals the snapshot interval</strong> (hourly → ≤ 1 h).</p>
+<p><strong>Restore</strong> onto a fresh or rebuilt host: install the same server version, drop the backed-up <code>state.json</code> + <code>bootstrap.key</code> (and <code>session.key</code>, <code>audit.json</code>) into the data directory, restore <code>server.env</code> and TLS, then start the server. It comes up with every application, host, user, project, webhook and audit sink intact, and the seal key decrypts the sealed secrets. On a small fleet this <strong>RTO is a few seconds</strong>. The <code>backup-restore</code> CI job exercises the seal round-trip on every build, and you can rehearse recovery safely by restoring into a throwaway data directory and starting a second server on a loopback port (no TLS, no <code>-agent-dist</code>) — no agent can reach it, so nothing is applied.</p>
+<h2 id="high-availability-enterprise">High availability (Enterprise)</h2>
 <p>With the Postgres backend, run multiple servers: reads are served anywhere and writes go through an elected leader (writes from a standby are forwarded). The Recovery screen shows HA and leadership status.</p>
-<h2>Metrics</h2>
+<h2 id="metrics">Metrics</h2>
 <p><code>/metrics</code> exposes Prometheus metrics (host online/offline counts, app sync state, and more). On an untrusted network protect it with <code>-metrics-token</code>; the Security screen flags when it is open.</p>
-<h2>A typical change</h2>
+<h2 id="a-typical-change">A typical change</h2>
 <ol>
 <li>Commit a manifest change to the app's Git folder and push.</li>
 <li>hostcd shows the app <strong>Out of sync</strong> with a diff (the preview).</li>

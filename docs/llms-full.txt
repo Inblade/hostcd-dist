@@ -121,7 +121,7 @@ The folder contains manifests describing desired system state. hostcd renders th
 
 ## Resource kinds
 
-A manifest declares resources. The system kinds include **packages**, **files** (static or Go-templated), **services**, **users**, **groups**, **directories**, **symlinks**, **cron jobs**, **sysctl** settings, **mounts**, **apt repositories**, and **ufw rules**. Templated files use host facts (`.Hostname`, `.OSID`, `.OSVersion`, `.OSFamily`) and labels (`.Labels.<key>`), and a `notify:` on a file restarts a service when the file changes.
+A manifest declares resources. The system kinds include **packages**, **files** (static or Go-templated), **services**, **users**, **groups**, **directories**, **symlinks**, **cron jobs**, **sysctl** settings, **mounts**, **apt repositories**, **ufw rules**, and **nvidia_gpu** (GPU bare-metal: the NVIDIA datacenter driver, the DCGM host engine, and the DCGM Prometheus exporter on `:9400`, from one resource). Templated files use host facts (`.Hostname`, `.OSID`, `.OSVersion`, `.OSFamily`) and labels (`.Labels.<key>`), and a `notify:` on a file restarts a service when the file changes.
 
 ![hostcd application detail for nginx showing an Out-of-sync status and a resource tree that expands the app into three hosts, each with its nginx package, config files (one marked content-differs), and the nginx service, with Sync, Refresh, Pending changes and History/rollback actions](https://hostcd.dev/screenshots/app-resource-tree.jpg)
 
@@ -200,6 +200,10 @@ hostcd upgrades server-first: upgrade `hostcd-server`, then the agents. The prot
 
 Upgrade an agent by re-running the agent install (or swapping the verified binary and `systemctl restart hostcd-agent`); the token in `/etc/hostcd/agent.env` is preserved, so there is no re-enrolment.
 
+## Per-host agent tokens (SSH-less hosts)
+
+Install-over-SSH mints a per-host token automatically, so each Linux host authenticates with its own token and can be revoked on its own. A host with no SSH path — a Windows agent, or an air-gapped host — enrols with the shared token instead. From **v0.3.17** you can move it onto a per-host token: mint one with `POST /api/hosts/{name}/token` (admin), set it in the agent's config, and restart the agent. The token is returned once and the host's previous token stops working immediately, so set it promptly. Once every host has a per-host token you can retire the shared token. For the exact Windows (RDP) steps see the Windows guide.
+
 ## One-click self-update (opt-in)
 
 Because the server runs unprivileged it cannot replace its own binary, so one-click update is **off by default**. Enable it at install time with `HOSTCD_SELF_UPDATE=1` (cosign must be installed on the host — it is mandatory for the unattended root updater). This adds:
@@ -212,7 +216,22 @@ With it enabled, the UI shows the running version in the sidebar, a **What's new
 
 ## Backup and restore
 
-The **Backup** screen exports the full server state (applications, hosts, projects, users, settings) to a file, and restores from one. Keep a periodic export; the Recovery screen shows when the last export ran.
+Use two layers together.
+
+**In-app export.** The **Backup** screen exports the full declarative state (applications, hosts, projects, users, settings) to a file and restores from one; the Recovery screen shows when the last export ran. This file carries no secrets, so it is safe to store anywhere — but on its own it cannot unseal sealed data (SSH keys, webhook and audit-sink secrets).
+
+**Filesystem snapshot (full recovery).** To stand a control plane back up exactly as it was — sealed secrets included — back up the data directory and the seal key together:
+
+- `state.json` — the full state
+- `bootstrap.key` — the AES-256-GCM seal key. **Without it the sealed secrets cannot be decrypted.**
+- `session.key`, `audit.json` — session signing and the audit trail
+- `server.env` and your TLS cert/key — to restart with the same identity
+
+Because that key decrypts everything, treat the snapshot like a secret: keep it `0600`, encrypt it in transit and at rest, and store it **off-box** — a snapshot that lives only on the server it protects does not survive losing that server.
+
+An hourly systemd timer whose service does a copy-then-tar of the files above into a root-`0600` tarball (rotating the newest N) gives a point-in-time backup; replicate it off-box on the same cadence. The file store persists on every mutation, so each snapshot is internally consistent and the **RPO equals the snapshot interval** (hourly → ≤ 1 h).
+
+**Restore** onto a fresh or rebuilt host: install the same server version, drop the backed-up `state.json` + `bootstrap.key` (and `session.key`, `audit.json`) into the data directory, restore `server.env` and TLS, then start the server. It comes up with every application, host, user, project, webhook and audit sink intact, and the seal key decrypts the sealed secrets. On a small fleet this **RTO is a few seconds**. The `backup-restore` CI job exercises the seal round-trip on every build, and you can rehearse recovery safely by restoring into a throwaway data directory and starting a second server on a loopback port (no TLS, no `-agent-dist`) — no agent can reach it, so nothing is applied.
 
 ## High availability (Enterprise)
 

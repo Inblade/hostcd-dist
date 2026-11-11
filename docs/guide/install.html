@@ -10,9 +10,9 @@
 <link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/assets/docs.css">
 <!-- Cloudflare Web Analytics — cookieless, no cross-site tracking, aggregate only.
-     Replace 7e4e2eb4b4164e1ba5f8d4ea0212b83e with the token from the Cloudflare dashboard
+     Replace e77be28dc0594881be0722db362acecd with the token from the Cloudflare dashboard
      (Analytics & Logs → Web Analytics). Until then this loads nothing useful but is harmless. -->
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "e77be28dc0594881be0722db362acecd"}'></script>
 </head>
 <body>
 <header class="topbar">
@@ -30,9 +30,9 @@
     <div class="side-foot"><a class="mono" href="/llms-full.txt" data-track="llms-full">Full docs (one file) ↗</a></div>
   </aside>
   <main class="content">
-<h1>hostcd — install</h1>
+<h1 id="hostcd--install">hostcd — install</h1>
 <p>hostcd is two binaries managed by systemd: <code>hostcd-server</code> (one per fleet) and <code>hostcd-agent</code> (one per managed host). Linux with systemd is required. The supported host families are Ubuntu/Debian and RHEL/Rocky.</p>
-<h2>Install the control plane</h2>
+<h2 id="install-the-control-plane">Install the control plane</h2>
 <p>Run on the machine that will be your control plane (needs root for the systemd unit):</p>
 <pre><code class="language-sh">curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
   | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download \
@@ -40,7 +40,7 @@
 </code></pre>
 <p>The installer downloads the signed binary, <strong>verifies it</strong> against the release <code>SHA256SUMS</code> (and cosign provenance when cosign is installed), installs the <code>hostcd-server</code> systemd unit, and generates <code>/etc/hostcd/server.env</code> with a random admin password and a shared agent-enrolment token. By default the server listens on <code>127.0.0.1:8080</code> — put TLS or a reverse proxy in front, or pass <code>-tls-cert</code>/<code>-tls-key</code>, before exposing it.</p>
 <p>Open the UI and sign in as <code>admin</code> with the generated password (read it from <code>/etc/hostcd/server.env</code>).</p>
-<h2>Enrol a host</h2>
+<h2 id="enrol-a-host">Enrol a host</h2>
 <p>The simplest path is <strong>Add host → Install over SSH</strong> from the UI: the server installs the agent over SSH and mints a per-host token automatically. To install by hand on the host instead:</p>
 <pre><code class="language-sh">curl -fsSL https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh \
   | sudo env HOSTCD_RELEASE_BASE=https://github.com/Inblade/hostcd-dist/releases/latest/download \
@@ -48,7 +48,7 @@
 </code></pre>
 <p>The agent writes its token to <code>/etc/hostcd/agent.env</code>, starts dialing out, and appears in <strong>Hosts</strong> within seconds.</p>
 <p><img src="../screenshots/hosts.jpg" alt="hostcd Hosts screen showing managed hosts with labels, targeting applications, per-host sync and health, agent version, and last check-in"></p>
-<h2>Verify a download yourself</h2>
+<h2 id="verify-a-download-yourself">Verify a download yourself</h2>
 <p>Every release publishes <code>SHA256SUMS</code> and a keyless cosign bundle. To check an artifact before trusting it:</p>
 <pre><code class="language-sh">cosign verify-blob SHA256SUMS \
   --bundle SHA256SUMS.cosign.bundle \
@@ -57,7 +57,7 @@
 sha256sum -c SHA256SUMS
 </code></pre>
 <p>The public mirror is not re-signed, so the cosign identity stays the source repository's release workflow regardless of which mirror you downloaded from.</p>
-<h2>Air-gapped / private mirror</h2>
+<h2 id="air-gapped--private-mirror">Air-gapped / private mirror</h2>
 <p>Point <code>HOSTCD_RELEASE_BASE</code> at your own mirror (it may be plain HTTP on a trusted network). Pin the manifest out of band with <code>HOSTCD_EXPECTED_SHA256SUMS_SHA256=&lt;sha256 of SHA256SUMS&gt;</code> so the installer fails closed if the mirror is wrong or tampered.</p>
 <p>Next: <a href="concepts.md">concepts</a> · <a href="operations.md">operations</a> · <a href="security.md">security</a>.</p>
 
