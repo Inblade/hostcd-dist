@@ -1,0 +1,50 @@
+name: publish-sync
+
+# Publishes a release's documentation sync hands-free, WITHOUT the cross-repo
+# token needing pull-requests:write.
+#
+# The hostcd core release workflow pushes a `docs/sync-<version>` branch here
+# using a token that only has contents:write (it can push a branch, but cannot
+# open a PR cross-repo). This workflow — running inside this repo with the
+# repo's own GITHUB_TOKEN — opens the PR and arms auto-merge. The companion
+# site-consistency job runs on the same branch push, so the required
+# "site-consistency" check is already green on the PR head commit and GitHub
+# squash-merges the sync as soon as it passes.
+#
+# Requirements on this repo (one-time): "Allow auto-merge" ON, and "Allow GitHub
+# Actions to create and approve pull requests" ON.
+
+on:
+  push:
+    branches: ['docs/sync-**']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: publish-sync-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  open-and-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the docs-sync PR and enable auto-merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BR: ${{ github.ref_name }}
+        run: |
+          ver="${BR#docs/sync-}"
+          num="$(gh pr list --head "$BR" --base main --state open --json number --jq '.[0].number')"
+          if [ -z "$num" ]; then
+            gh pr create --base main --head "$BR" \
+              --title "docs: sync hostcd.dev for ${ver}" \
+              --body "Automated documentation sync for ${ver}, opened by the publish-sync workflow (the core release only pushes the branch)."
+          fi
+          # Arm auto-merge; GitHub lands it once the required site-consistency
+          # check (running on this same push) is green. Non-fatal so a transient
+          # hiccup leaves the PR open for a manual merge rather than failing loud.
+          gh pr merge "$BR" --squash --auto --delete-branch \
+            || echo "::warning title=auto-merge not armed::open the PR for $BR on $GH_REPO and merge it manually"
