@@ -8,7 +8,12 @@ name: site-consistency
 on:
   pull_request:
   push:
-    branches: [main]
+    # Also runs on the release-pushed docs-sync branches: the check posts its
+    # status on that branch's head commit, which is the head of the PR that
+    # publish-sync opens — so the PR's required "site-consistency" check is
+    # already satisfied and auto-merge can land it without a human. (A PR opened
+    # by GITHUB_TOKEN does not itself trigger the pull_request event.)
+    branches: [main, 'docs/sync-**']
 
 permissions:
   contents: read
