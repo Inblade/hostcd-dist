@@ -3,6 +3,42 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.20] — 2026-11-12
+
+A small maintenance release: the fixes accumulated since v0.3.19, no new resource
+kinds or features.
+
+### Added
+- **"Check for updates" button** in Settings → Software updates. It forces a fresh
+  check against the release channel and shows "You're up to date" when there is
+  nothing new, or offers the update (one-click when the server has the updater
+  configured) — so an operator no longer has to wait out the background poll or
+  rely on the passive banner.
+### Fixed
+- **Settings were stale right after a form login.** `/api/settings` is now
+  refetched immediately after login (as it already was on a page reload), so the
+  license card, the nav update banner and the installed-version row render
+  correctly instead of appearing empty until the next reload.
+### Changed
+- **Honest status on read-only instances.** A read-only server (the public demo)
+  no longer advertises Team-trial write permissions it cannot exercise: the
+  UI/API entitlement view reports the write-capable permissions as unavailable and
+  flags `readOnly`, while enforcement is unchanged (read-only is already enforced
+  at the HTTP layer). The Recovery "Backup & restore" card labels the UI
+  export/import as **config** export/import and points at
+  `reliability/pilot-restore-drill.sh` for the actual data-dir disaster-recovery
+  rehearsal.
+- **The release publishes the site hands-free.** The docs-sync PR to the public
+  `hostcd-dist` site now auto-merges once its consistency check passes, instead of
+  waiting for a manual merge every release.
+### Reliability
+- **Real-data restore drill for the live pilot** (`reliability/pilot-restore-drill.sh`
+  + `PILOT-RESTORE-REPORT.md`): a non-destructive drill that backs up the live
+  data dir, restores it onto a throwaway instance, confirms the real applications
+  and hosts recover and the sealed secrets decrypt, and checks that a mismatched
+  `bootstrap.key` fails closed — the disaster-recovery evidence on real state, not
+  just the synthetic CI drill.
+
 ## [0.3.19] — 2026-11-11
 ### Added
 - **`nvidia_gpu` resource kind** — converge a GPU bare-metal host to the full

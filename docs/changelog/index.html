@@ -33,8 +33,52 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to hostcd are documented here. This project uses date-based
 <code>vMAJOR.MINOR.PATCH</code> tags; security releases are called out explicitly.</p>
-<h2 id="0319--2026-11-11">[0.3.19] — 2026-11-11</h2>
+<h2 id="0320--2026-11-12">[0.3.20] — 2026-11-12</h2>
+<p>A small maintenance release: the fixes accumulated since v0.3.19, no new resource
+kinds or features.</p>
 <h3 id="added">Added</h3>
+<ul>
+<li><strong>&quot;Check for updates&quot; button</strong> in Settings → Software updates. It forces a fresh
+check against the release channel and shows &quot;You're up to date&quot; when there is
+nothing new, or offers the update (one-click when the server has the updater
+configured) — so an operator no longer has to wait out the background poll or
+rely on the passive banner.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li><strong>Settings were stale right after a form login.</strong> <code>/api/settings</code> is now
+refetched immediately after login (as it already was on a page reload), so the
+license card, the nav update banner and the installed-version row render
+correctly instead of appearing empty until the next reload.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li><strong>Honest status on read-only instances.</strong> A read-only server (the public demo)
+no longer advertises Team-trial write permissions it cannot exercise: the
+UI/API entitlement view reports the write-capable permissions as unavailable and
+flags <code>readOnly</code>, while enforcement is unchanged (read-only is already enforced
+at the HTTP layer). The Recovery &quot;Backup &amp; restore&quot; card labels the UI
+export/import as <strong>config</strong> export/import and points at
+<code>reliability/pilot-restore-drill.sh</code> for the actual data-dir disaster-recovery
+rehearsal.</li>
+<li><strong>The release publishes the site hands-free.</strong> The docs-sync PR to the public
+<code>hostcd-dist</code> site now auto-merges once its consistency check passes, instead of
+waiting for a manual merge every release.</li>
+</ul>
+<h3 id="reliability">Reliability</h3>
+<ul>
+<li><strong>Real-data restore drill for the live pilot</strong> (<code>reliability/pilot-restore-drill.sh</code>
+<ul>
+<li><code>PILOT-RESTORE-REPORT.md</code>): a non-destructive drill that backs up the live
+data dir, restores it onto a throwaway instance, confirms the real applications
+and hosts recover and the sealed secrets decrypt, and checks that a mismatched
+<code>bootstrap.key</code> fails closed — the disaster-recovery evidence on real state, not
+just the synthetic CI drill.</li>
+</ul>
+</li>
+</ul>
+<h2 id="0319--2026-11-11">[0.3.19] — 2026-11-11</h2>
+<h3 id="added-1">Added</h3>
 <ul>
 <li><strong><code>nvidia_gpu</code> resource kind</strong> — converge a GPU bare-metal host to the full
 NVIDIA monitoring stack from Git in one declaration: the datacenter driver
@@ -48,7 +92,7 @@ Ubuntu/Debian and RHEL/Rocky; pair it with a CUDA <code>apt_repository</code> /
 is down, so a crashlooping unit is not reported healthy. See
 <code>examples/repo/groups/gpu/nvidia.yaml</code>.</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed-1">Changed</h3>
 <ul>
 <li>The public site now stays in lockstep with releases automatically: the
 <code>hostcd.dev</code> changelog page is generated from this file and the pinned install
@@ -56,7 +100,7 @@ version on the landing and README is bumped on every release, so neither drifts
 from the shipped version again.</li>
 </ul>
 <h2 id="0318--2026-11-11">[0.3.18] — 2026-11-11</h2>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li><strong>Read-only mode</strong> (<code>-read-only</code>) — the server refuses every mutating request
 with a clean JSON <code>403</code> and advertises <code>readOnly:true</code> in the session, while the
@@ -80,7 +124,7 @@ trusted network). A server started manually without the token still leaves
 agent — so <code>sha256sum -c</code> can no longer verify a release green while an artifact
 that silently failed to build is simply absent from <code>SHA256SUMS</code>.</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 <ul>
 <li>The modal/drawer scrim is now a neutral black, so it visibly dims the content
 behind it on the dark theme (it previously matched the dark page background and
@@ -95,7 +139,7 @@ runbook for moving an SSH-less Windows agent to a per-host token; a top-level
 (approval gates / notifications / audit export are Team, not Enterprise).</li>
 </ul>
 <h2 id="0317--2026-11-10">[0.3.17] — 2026-11-10</h2>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li><strong>Mint a per-host agent token for an existing host</strong> — <code>POST /api/hosts/{name}/token</code>
 (admin-only, audited). Per-host tokens were previously minted only by
@@ -131,12 +175,12 @@ nothing has been written yet; an undeliverable forward returns <code>503</code> 
 <code>Retry-After</code> rather than a hard <code>502</code>.</li>
 <li>HA remains an <strong>Enterprise preview</strong> pending a multi-day two-node soak.</li>
 </ul>
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 <ul>
 <li>The server <strong>refuses a server-side install from a stale <code>-agent-dist</code></strong>
 (prevents a silent agent downgrade) and warns at startup on a version mismatch.</li>
 </ul>
-<h3 id="added-3">Added</h3>
+<h3 id="added-4">Added</h3>
 <ul>
 <li><code>deploy/install.sh</code> can <strong>auto-populate <code>-agent-dist</code></strong> with cosign/SHA256SUMS-
 verified agents in lockstep with the server version (opt-in via
@@ -166,13 +210,13 @@ scoped viewers.</li>
 package/service/user/group names.</li>
 <li>Desktop: <code>tokio</code> → 1.54.1; <code>cargo-audit</code> now runs in required CI.</li>
 </ul>
-<h3 id="added-4">Added</h3>
+<h3 id="added-5">Added</h3>
 <ul>
 <li>Windows agent <code>hostcd-agent-windows-amd64.exe</code> published in releases (late beta;
 <code>package</code>/<code>file</code>/<code>service</code>). See <code>docs/WINDOWS.md</code>.</li>
 <li>UI: view and edit a host's admin-assigned targeting labels.</li>
 </ul>
-<h3 id="fixed-2">Fixed</h3>
+<h3 id="fixed-3">Fixed</h3>
 <ul>
 <li>Documentation consistency (pricing/trial wording); self-contained public
 release notes.</li>
@@ -182,7 +226,7 @@ release notes.</li>
 <ul>
 <li>Bumped <code>golang.org/x/oauth2</code> to v0.27.0 (CVE-2025-22868).</li>
 </ul>
-<h3 id="changed-1">Changed</h3>
+<h3 id="changed-2">Changed</h3>
 <ul>
 <li>Licensing docs reconciled to monthly pricing and the honest source-availability
 status; added CI docs-consistency and site-consistency guards.</li>
