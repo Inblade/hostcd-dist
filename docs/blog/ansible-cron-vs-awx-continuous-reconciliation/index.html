@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ansible from cron works — until nobody knows whether it worked — hostcd</title>
+<meta name="description" content="Ansible from cron is fine until it quietly becomes your control plane. A practical comparison of Ansible from cron, AWX and continuous reconciliation for growing Linux fleets.">
+<link rel="canonical" href="https://hostcd.dev/blog/ansible-cron-vs-awx-continuous-reconciliation/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="hostcd">
+<meta property="og:title" content="Ansible from cron works — until nobody knows whether it worked">
+<meta property="og:description" content="Cron tells you a job started; Ansible tells you what one run did. Neither continuously tells you whether the fleet still matches Git. Cron vs AWX vs continuous reconciliation.">
+<meta property="og:url" content="https://hostcd.dev/blog/ansible-cron-vs-awx-continuous-reconciliation/">
+<meta property="og:image" content="https://hostcd.dev/ui-dark.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hostcd.dev/ui-dark.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%2317191f'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='7'%20fill='%23d8530c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Ansible from cron works — until nobody knows whether it worked",
+  "description": "A practical comparison of Ansible from cron, AWX and continuous reconciliation for growing Linux fleets: when a successful run stops being the same as a correct current state.",
+  "datePublished": "2026-11-12",
+  "dateModified": "2026-11-13",
+  "author": {
+    "@type": "Person",
+    "name": "Danylo Kochetov",
+    "url": "https://www.linkedin.com/in/dkocheto"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "hostcd",
+    "url": "https://hostcd.dev/"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://hostcd.dev/blog/ansible-cron-vs-awx-continuous-reconciliation/"
+  },
+  "image": "https://hostcd.dev/ui-dark.png"
+}
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<main class="content" style="max-width:780px;margin:0 auto;padding:40px 22px 64px">
+  <p class="muted mono" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">From the engineering log · November 12, 2026</p>
+  <h1>Ansible from cron works — until nobody knows whether it worked</h1>
+  <p class="muted">By Danylo Kochetov</p>
+
+  <p>For a long time, one of my infrastructure setups relied on a perfectly reasonable automation stack:</p>
+  <ul>
+    <li>Ansible playbooks in Git</li>
+    <li>a few scheduled jobs</li>
+    <li>SSH access to the servers</li>
+    <li>logs available somewhere if I needed them</li>
+  </ul>
+  <p>It was simple, inexpensive and understandable. More importantly, it worked.</p>
+  <p>Then the number of servers grew. Not dramatically — this was not a thousand-node hyperscale fleet. But it grew enough that ordinary questions started taking longer to answer.</p>
+  <ul>
+    <li>Did the last job run on every host?</li>
+    <li>Did one server miss the update because it was offline?</li>
+    <li>Was the configuration still correct six hours later?</li>
+    <li>Which commit produced the state currently running on a particular machine?</li>
+  </ul>
+  <p>Cron could tell me that a command had started. Ansible could tell me what happened during that run. Neither continuously told me whether the fleet still matched Git.</p>
+  <p>That distinction is easy to ignore until something goes wrong.</p>
+
+  <h2>Cron was not the mistake</h2>
+  <p>Running Ansible from cron is often treated as an embarrassing temporary solution. I do not think that is fair.</p>
+  <p>For five servers and a small number of predictable jobs, it can be exactly the right solution. There is little infrastructure to maintain, every engineer understands it, and failures are usually easy to investigate.</p>
+  <p>Problems appear when the scheduled job quietly becomes the control plane.</p>
+  <p>At that point, several assumptions begin to break down.</p>
+
+  <h2>A successful run is not the same as a correct current state</h2>
+  <p>An Ansible job may finish successfully at 02:00. At 02:15, someone changes a configuration file manually. At 02:30, a package update restarts a service with different defaults.</p>
+  <p>The job succeeded, but the host has already drifted.</p>
+  <p>You can run Ansible more frequently, but that only reduces the interval. It does not give the system a persistent understanding of desired and actual state.</p>
+
+  <h2>Offline hosts create gaps</h2>
+  <p>A server that is unavailable during a scheduled run simply misses it.</p>
+  <p>You can add retries, wrapper scripts and queues. Eventually, however, the cron setup starts acquiring the responsibilities of an orchestration system — without a clear model for them.</p>
+
+  <h2>Logs answer the wrong question</h2>
+  <p>A log can show that a task failed on Tuesday at 03:17.</p>
+  <p>The operational question on Wednesday is usually simpler:</p>
+  <blockquote>Is this host correct now?</blockquote>
+  <p>Reconstructing that answer from job logs, shell history and monitoring alerts is possible. It is also a poor use of an engineer's time.</p>
+
+  <h2>Partial failures become normal</h2>
+  <p>A playbook applied successfully to 18 servers and failed on two. The next run fixed one of them. Someone repaired the other manually.</p>
+  <p>What is the fleet state now?</p>
+  <p>Without a dedicated inventory and state view, the answer often becomes "probably fine".</p>
+  <p>"Probably fine" does not scale particularly well.</p>
+
+  <h2>AWX solves a different part of the problem</h2>
+  <p>The obvious next step is often AWX or Ansible Automation Platform.</p>
+  <p>That can be the correct choice.</p>
+  <p>AWX gives you centralised job execution, inventories, credentials, schedules, access control and a history of runs. If the main problem is coordinating Ansible execution across a team, AWX is a substantial improvement over cron.</p>
+  <p>But AWX is primarily centred around jobs.</p>
+  <p>You select or schedule a playbook, it runs against an inventory, and the system records the result. That is useful orchestration.</p>
+  <p>Continuous reconciliation starts from a different question:</p>
+  <blockquote>What state should this host have, and does it still have that state right now?</blockquote>
+  <p>Neither model is universally better. They solve overlapping but different problems.</p>
+
+  <h2>Job orchestration and reconciliation</h2>
+  <p>A job-oriented system thinks in executions:</p>
+  <ol>
+    <li>Choose an inventory.</li>
+    <li>Start a playbook.</li>
+    <li>Record its result.</li>
+    <li>Repeat when necessary.</li>
+  </ol>
+  <p>A reconciliation system thinks in state:</p>
+  <ol>
+    <li>Git declares the desired configuration.</li>
+    <li>An agent reports the host's actual state.</li>
+    <li>The controller compares the two.</li>
+    <li>Drift is reported or corrected.</li>
+    <li>The process continues.</li>
+  </ol>
+  <p>This is roughly the distinction between deploying something once and continuously verifying that it remains deployed.</p>
+  <p>Kubernetes made this model familiar for clusters. Traditional Linux servers often still depend on periodic jobs and manual inspection.</p>
+  <p>That is not always a problem. But it becomes one when those servers are important enough that you need a reliable answer to "what is actually running?"</p>
+
+  <h2>Cron, AWX or continuous reconciliation?</h2>
+  <p>Here is the practical version.</p>
+  <p><strong>Keep Ansible from cron</strong> when the fleet is small, the tasks are predictable, failures are easy to notice, and nobody needs a central operational view.</p>
+  <p><strong>Choose AWX</strong> when multiple people need to launch and approve Ansible workflows, manage credentials, and inspect execution history.</p>
+  <p><strong>Consider continuous reconciliation</strong> when the requirement is not merely "run this playbook every hour", but "keep these hosts aligned with Git and show me when they are not".</p>
+
+  <h2>Why I built hostcd</h2>
+  <p>I built hostcd because I wanted the last model for ordinary Linux and Windows hosts.</p>
+  <p>The basic idea is deliberately unoriginal: use the GitOps reconciliation model that works well in Kubernetes, but apply it to hosts that are not Kubernetes nodes.</p>
+  <p>Applications and host groups are declared in Git. Agents poll for desired state and report their current state. The controller shows which hosts are online, which revision they use, and whether their resources are synced and healthy.</p>
+  <p>The pull model matters here. A host does not need to accept arbitrary inbound SSH connections from the control plane for every reconciliation cycle. It contacts the controller, receives the applicable desired state and reports the result.</p>
+  <p>hostcd is not intended to replace every Ansible installation.</p>
+  <p>It does not make sense to migrate a working five-server cron setup merely because a newer tool exists. It also does not try to reproduce AWX's complete workflow and execution model.</p>
+  <p>The useful case is narrower: you have a growing host fleet, Git already describes much of its configuration, and scheduled execution no longer gives you enough confidence in the current state.</p>
+
+  <h2>What a migration looks like</h2>
+  <p>A migration should start with one boring resource on one non-critical host.</p>
+  <p>Not the database. Not the entire production baseline. Something easy to verify, such as:</p>
+  <ul>
+    <li>a configuration file</li>
+    <li>a package</li>
+    <li>a systemd service</li>
+    <li>a user account</li>
+    <li>a scheduled task</li>
+  </ul>
+  <p>The process is straightforward:</p>
+  <ol>
+    <li>Keep the existing Ansible automation in place.</li>
+    <li>Express one resource as hostcd desired state in Git.</li>
+    <li>Connect a test host.</li>
+    <li>Compare the reported state with the current Ansible result.</li>
+    <li>Introduce deliberate drift.</li>
+    <li>Confirm that the drift is detected and, if enabled, corrected.</li>
+    <li>Remove the corresponding scheduled task only after the new path is understood.</li>
+  </ol>
+  <p>The goal is not a dramatic migration weekend. It is to replace uncertain periodic automation one small piece at a time.</p>
+  <p>There is a step-by-step version of this in the <a href="/guides/ansible-cron-to-hostcd/">Ansible cron → hostcd migration guide</a>.</p>
+
+  <h2>When you should not use hostcd</h2>
+  <p>You probably should not use it if:</p>
+  <ul>
+    <li>cron and Ansible already give you enough operational confidence</li>
+    <li>your entire fleet is managed successfully through Kubernetes</li>
+    <li>you mainly need complex, manually triggered Ansible workflows</li>
+    <li>installing an agent is prohibited</li>
+    <li>you are looking for a mature ecosystem with years of production history</li>
+  </ul>
+  <p>hostcd is still an early product. That means the feedback loop with its first users matters more than pretending every infrastructure problem has already been solved.</p>
+
+  <h2>The question I would ask</h2>
+  <p>Do not begin by asking which tool has the longest feature list.</p>
+  <p>Ask this instead:</p>
+  <blockquote>When a server drifts from Git at 03:00, how and when will we know?</blockquote>
+  <p>If the answer is clear and reliable, your current system may already be good enough.</p>
+  <p>If the answer involves waiting for the next scheduled run, searching several logs and checking the host manually, it may be time to move from periodic execution toward continuous reconciliation.</p>
+
+  <hr>
+  <p>You can explore a read-only hostcd environment here: <a href="https://demo.hostcd.dev/?utm_source=blog&amp;utm_medium=article&amp;utm_campaign=ansible_comparison&amp;utm_content=cta" target="_blank" rel="noopener" data-track="live-demo">demo.hostcd.dev →</a> (synthetic, anonymous, read-only). Then follow the <a href="/guides/ansible-cron-to-hostcd/" data-track="ansible-guide">migration guide</a>.</p>
+  <p>If you have a real Ansible cron setup and want to test the migration on one host, write to <a href="mailto:hello@hostcd.dev?subject=hostcd%20migration%20pilot">hello@hostcd.dev</a>. I am looking for a small number of early design partners, and I will help with the first deployment personally.</p>
+</main>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/guide/overview.html">Docs</a> · <a href="https://github.com/Inblade/hostcd-dist">GitHub</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>
