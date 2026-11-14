@@ -1,0 +1,14 @@
+# gitleaks config for hostcd.dev (static site). Extends the default ruleset and
+# allowlists the one verified non-secret so a real leak is not lost in the noise.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Verified non-secrets on hostcd.dev"
+# Match the regex against the whole line, not just the detected value.
+regexTarget = "line"
+regexes = [
+  # Cloudflare Web Analytics beacon token: public by design, embedded in every
+  # page's client HTML (data-cf-beacon). Not a credential.
+  '''data-cf-beacon''',
+]
