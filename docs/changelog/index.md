@@ -3,6 +3,31 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.21] — 2026-11-16
+
+A security release. The fixes from the 2026-11 security review that had landed on
+`main` are now shipped; no new resource kinds or features.
+
+### Security
+- **The standalone `hostcd` server authenticates `/status`, `/metrics` and
+  `/sync`.** When a sync token is configured these endpoints are no longer open;
+  without one the server binds loopback-only by default and logs a warning if it
+  is placed on a non-loopback address unauthenticated. (#236)
+- **Server-side request forgery via Team webhooks is blocked at dial time.**
+  Webhook delivery now refuses loopback, link-local, the cloud metadata address
+  (169.254.169.254) and multicast targets — covering redirects and DNS rebinding —
+  while ordinary private ranges stay allowed for on-prem endpoints. The server
+  also gained idle and header-size limits. (#234)
+- **`golang.org/x/net` upgraded to 0.62.0** to pick up the fix for
+  CVE-2026-78661. (#229)
+
+### Changed
+- **Internal hardening, no behaviour change.** golangci-lint (with gosec) now runs
+  in CI and `make lint`; a scheduled gitleaks / trivy / govulncheck scan runs every
+  two days and on each release tag; the port-forward proxy moved off the deprecated
+  `Director` API; and the largest server files were split for maintainability.
+  (#219, #221, #223, #225, #227, #231, #232)
+
 ## [0.3.20] — 2026-11-12
 
 A small maintenance release: the fixes accumulated since v0.3.19, no new resource
