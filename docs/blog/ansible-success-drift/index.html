@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ansible ran successfully. So why are my Linux hosts still different? — hostcd</title>
+<meta name="description" content="A green Ansible run describes the past. It does not prove that your Linux fleet still matches Git now. A concrete look at drift, health and failed reconciliation.">
+<link rel="canonical" href="https://hostcd.dev/blog/ansible-success-drift/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="hostcd">
+<meta property="og:title" content="Ansible ran successfully. So why are my Linux hosts still different?">
+<meta property="og:description" content="A concrete look at the blind interval between automation runs, and why sync status and health are different operational signals.">
+<meta property="og:url" content="https://hostcd.dev/blog/ansible-success-drift/">
+<meta property="og:image" content="https://hostcd.dev/blog/ansible-success-drift/postgres-drift.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ansible ran successfully. So why are my Linux hosts still different?">
+<meta name="twitter:description" content="A green run tells you what happened then. It does not prove that the host still matches Git now.">
+<meta name="twitter:image" content="https://hostcd.dev/blog/ansible-success-drift/postgres-drift.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%2317191f'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='7'%20fill='%23d8530c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/assets/docs.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Ansible ran successfully. So why are my Linux hosts still different?",
+  "description": "A concrete look at the blind interval between automation runs, and why sync status and health are different operational signals.",
+  "datePublished": "2026-11-19",
+  "dateModified": "2026-11-19",
+  "author": {"@type": "Person", "name": "Danylo Kochetov", "url": "https://www.linkedin.com/in/dkocheto"},
+  "publisher": {"@type": "Organization", "name": "hostcd", "url": "https://hostcd.dev/"},
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "https://hostcd.dev/blog/ansible-success-drift/"},
+  "image": "https://hostcd.dev/blog/ansible-success-drift/postgres-drift.jpg"
+}
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7e4e2eb4b4164e1ba5f8d4ea0212b83e"}'></script>
+<script defer src="/assets/consent.js"></script>
+<style>
+  figure{margin:1.4em 0 2em}
+  figure img{margin-bottom:.5em!important}
+  figcaption{font-size:14px;color:var(--muted)}
+  .evidence{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px 18px;margin:1.2em 0}
+  .evidence p:first-child{margin-top:0}.evidence p:last-child{margin-bottom:0}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="dot"></span>hostcd</a>
+  <nav class="topnav">
+    <a href="/">Home</a>
+    <a href="/guide/overview.html">Docs</a>
+    <a href="https://github.com/Inblade/hostcd-dist">GitHub ↗</a>
+  </nav>
+</header>
+<main class="content" style="max-width:780px;margin:0 auto;padding:40px 22px 64px">
+  <p class="muted mono" style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">From the engineering log · November 19, 2026</p>
+  <h1>Ansible ran successfully. So why are my Linux hosts still different?</h1>
+  <p class="muted">By Danylo Kochetov</p>
+
+  <p>I have trusted a lot of green Ansible runs.</p>
+  <p>The playbook completed. No failed hosts. The CI job was green. I closed the tab and moved on.</p>
+  <p>Then, hours later, one machine was different.</p>
+  <p>Someone had stopped a service while troubleshooting. A package had been upgraded manually. A configuration file had been edited directly because the incident was already ten minutes old and nobody wanted to wait for the next pipeline.</p>
+  <p>None of this made the earlier Ansible run false. It had succeeded. It just described the fleet at one point in time.</p>
+  <p>That distinction matters more than it sounds.</p>
+
+  <h2>A successful run is a historical fact</h2>
+  <p>Ansible is good at applying an intended change to a known set of machines. It is readable, widely understood and backed by a huge ecosystem. I still use it, and I am not trying to replace every playbook with a new abstraction.</p>
+  <p>The problem begins when a scheduled run is also expected to answer a different question:</p>
+  <blockquote>Does every host still match the intended state right now?</blockquote>
+  <p>A cron job cannot answer that between executions. A green CI result at 02:00 does not tell you whether <code>postgresql</code> is still running at 09:17. Running the same job every five minutes narrows the blind interval, but it does not automatically give you a durable model for drift, health, rollout history and recovery.</p>
+  <p>You can build those things around Ansible. Many teams do. Eventually, however, the surrounding system becomes the larger part of the problem.</p>
+
+  <h2>A small, concrete failure</h2>
+  <p>I used the public hostcd demo to inspect a deliberately broken PostgreSQL application. The demo is read-only and its data resets every 30 minutes, so this is evidence of how state is represented, not a production benchmark.</p>
+  <p>The application declares three resources for one host:</p>
+  <ul>
+    <li>the <code>postgresql-16</code> package;</li>
+    <li><code>/etc/postgresql/16/main/conf.d/tuning.conf</code>;</li>
+    <li>the <code>postgresql</code> service.</li>
+  </ul>
+  <p>The package and configuration file are both shown as <strong>Synced</strong> and <strong>Healthy</strong>. The service is not. It is <strong>Out of sync</strong>, <strong>Degraded</strong>, and carries the reason <code>service failed</code>.</p>
+
+  <figure>
+    <img src="/blog/ansible-success-drift/postgres-drift.jpg" width="1600" height="805" loading="eager" alt="hostcd resource tree showing a healthy PostgreSQL package and configuration file, while the PostgreSQL service is out of sync and degraded">
+    <figcaption>The package and configuration still match Git. The failed service is isolated instead of turning the whole host into an unexplained red status.</figcaption>
+  </figure>
+
+  <p>This is the useful level of detail. “The host is broken” would be too broad. “The last automation job failed” would not tell me what remains correct. Here, the failed resource is isolated without hiding the two resources that still match the desired state.</p>
+  <p>The rollout result also preserves the actual failure instead of flattening it into a badge:</p>
+  <pre><code>rollout halted: 0 of 1 hosts succeeded
+db-1: service:postgresql: Job for postgresql failed because
+the control process exited with error code</code></pre>
+  <p>The history view records the failed attempt, the actor and the affected host count.</p>
+
+  <figure>
+    <img src="/blog/ansible-success-drift/postgres-history.jpg" width="1600" height="805" loading="lazy" alt="hostcd operation history showing a failed PostgreSQL rollout and the systemd service error">
+    <figcaption>The failed transition remains visible with its resource-level error.</figcaption>
+  </figure>
+
+  <p>This does not make the incident disappear. It makes the current state and the attempted transition explicit.</p>
+
+  <h2>Desired state and health are not the same thing</h2>
+  <p>One detail in the demo is easy to miss: an application can be out of sync while still healthy.</p>
+  <p>The production Nginx application is behind the target Git revision, but its current resources are healthy. PostgreSQL is both out of sync and degraded because its service has actually failed.</p>
+  <ul>
+    <li><strong>Out of sync, healthy:</strong> the host is not at the intended revision, but the currently deployed resources are functioning.</li>
+    <li><strong>Out of sync, degraded:</strong> the host differs from the intended state and at least one managed resource is broken.</li>
+    <li><strong>Synced, healthy:</strong> the managed resources match the target revision and are functioning.</li>
+  </ul>
+  <p>If all three situations collapse into “the last job was green or red,” the operator loses useful information.</p>
+  <p>The application overview makes the distinction visible across the demo fleet: four applications are synced, two are out of sync, five are healthy and one is degraded.</p>
+
+  <figure>
+    <img src="/blog/ansible-success-drift/apps-overview.jpg" width="1600" height="805" loading="lazy" alt="hostcd application overview separating sync status from health across six applications">
+    <figcaption>Sync status answers “does it match Git?” Health answers “is the managed resource functioning?”</figcaption>
+  </figure>
+
+  <h2>The blind interval in scheduled automation</h2>
+  <p>Imagine a simple nightly playbook:</p>
+  <pre><code>- name: Keep PostgreSQL running
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true</code></pre>
+  <p>At 02:00 it succeeds. At 11:10 an engineer stops PostgreSQL while investigating disk pressure and forgets to start it again. The next scheduled run is at 02:00 the following day.</p>
+  <p>For almost fifteen hours, the desired state exists in Git and the actual state has diverged. The pipeline remains green because it has not run again.</p>
+  <p>This is not an Ansible bug. It is a property of the execution model.</p>
+  <p>The usual fixes are familiar:</p>
+  <ul>
+    <li>run the playbook more often;</li>
+    <li>add a monitoring alert;</li>
+    <li>trigger remediation from the alert;</li>
+    <li>store the outputs somewhere;</li>
+    <li>add locking so two runs do not overlap;</li>
+    <li>build a view showing which machines converged;</li>
+    <li>decide what to do with partial failures.</li>
+  </ul>
+  <p>Each step is reasonable. Together they are the beginning of a control plane.</p>
+
+  <h2>What continuous reconciliation changes</h2>
+  <p>With reconciliation, the system repeatedly compares the declared state with the state reported by each agent. The agent pulls work, applies the necessary resource operations and reports the result. The control plane keeps the difference visible until the host converges or the operation fails with a concrete reason.</p>
+  <p>For a Linux fleet outside Kubernetes, I wanted the same basic operating idea that made GitOps useful in clusters:</p>
+  <ol>
+    <li>Git contains the intended state.</li>
+    <li>Hosts do not need inbound management ports.</li>
+    <li>Agents pull the desired work from the control plane.</li>
+    <li>The UI separates revision drift from resource health.</li>
+    <li>Failed operations retain enough detail to investigate them.</li>
+  </ol>
+  <p>That is why I built hostcd.</p>
+  <p>It is not “Ansible, but with another UI.” The useful difference is the long-running reconciliation loop and the state model around it. Existing playbooks can still handle provisioning and complex one-off changes. hostcd is aimed at the part that starts after the playbook finishes: keeping the declared host state true.</p>
+
+  <h2>What this demo proves — and what it does not</h2>
+  <div class="evidence">
+    <p><strong>Observed in the v0.3.21 public demo:</strong> application-level and resource-level drift, health separated from sync status, a partially healthy resource tree, a target Git revision, and a failed rollout with the underlying service error.</p>
+    <p><strong>Not proven by this demo:</strong> production recovery time, large-fleet performance, or automatic repair under every failure mode.</p>
+  </div>
+  <p>The demo resets seeded data and does not allow visitors to execute a sync. The next useful measurement is therefore specific: stop a non-critical service on a writable pilot host, record the time of the state change, then record when hostcd detects and repairs it. Publish both timestamps and the configuration used.</p>
+  <p>I would rather show that measurement than turn a demo fixture into a benchmark.</p>
+
+  <h2>Try the failure, not just the happy path</h2>
+  <p>If your Linux fleet is currently managed by scheduled Ansible, ask one practical question:</p>
+  <blockquote>What tells us that a host changed after the last successful run?</blockquote>
+  <p>If the answer is “the next run,” there is a blind interval. If the answer is monitoring, ask whether it only alerts or also connects the failure back to the desired Git state and the remediation history.</p>
+  <p>Open the <a href="https://demo.hostcd.dev/?utm_source=blog&amp;utm_medium=article&amp;utm_campaign=ansible_drift&amp;utm_content=cta" target="_blank" rel="noopener" data-track="live-demo">read-only hostcd demo</a>, select the PostgreSQL application, compare the package, file and service resources, and then inspect <strong>Pending changes</strong> and <strong>History</strong>.</p>
+  <p>If you manage Linux hosts outside Kubernetes and want to test the same failure on non-critical machines, write to <a href="mailto:hello@hostcd.dev?subject=hostcd%20drift%20pilot">hello@hostcd.dev</a>. I am looking for a small number of design partners and will help with the first deployment personally.</p>
+  <p>For a practical migration path, see <a href="/guides/ansible-cron-to-hostcd/">From scheduled Ansible to continuous reconciliation</a>.</p>
+</main>
+<footer class="docfoot">
+  <span class="brand" style="font-size:16px"><span class="dot"></span>hostcd</span>
+  <span class="muted">Your Linux fleet, reconciled to Git.</span>
+  <span><a href="/">Home</a> · <a href="/guide/overview.html">Docs</a> · <a href="https://github.com/Inblade/hostcd-dist">GitHub</a></span>
+</footer>
+<script src="/assets/track.js" defer></script>
+</body>
+</html>
