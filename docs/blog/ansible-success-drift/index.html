@@ -71,6 +71,12 @@
   <p>A cron job cannot answer that between executions. A green CI result at 02:00 does not tell you whether <code>postgresql</code> is still running at 09:17. Running the same job every five minutes narrows the blind interval, but it does not automatically give you a durable model for drift, health, rollout history and recovery.</p>
   <p>You can build those things around Ansible. Many teams do. Eventually, however, the surrounding system becomes the larger part of the problem.</p>
 
+  <h2>What about <code>ansible-playbook --check --diff</code>?</h2>
+  <p>A reader raised the most direct counterpoint: schedule Ansible in check mode and use <code>--diff</code>. That is a valid way to detect drift. Modules that support check mode can report what they would change, and <code>--diff</code> can show the predicted difference without applying it.</p>
+  <p>For a small environment, a scheduled check may be the right solution. It is familiar, inexpensive and does not require another control plane. If it gives your team enough visibility, there is no reason to replace it.</p>
+  <p>The tradeoff is that it remains a point-in-time inspection. Check mode support varies between modules, predicted changes do not necessarily describe whether a resource is operationally healthy, and the surrounding workflow still has to store results, notify an operator and connect a finding to remediation history.</p>
+  <p>The distinction is therefore not that Ansible cannot detect drift. It can. The distinction is between periodic drift checks and a long-running model that keeps drift, health, reconciliation and history in one control loop.</p>
+
   <h2>A small, concrete failure</h2>
   <p>I used the public hostcd demo to inspect a deliberately broken PostgreSQL application. The demo is read-only and its data resets every 30 minutes, so this is evidence of how state is represented, not a production benchmark.</p>
   <p>The application declares three resources for one host:</p>
