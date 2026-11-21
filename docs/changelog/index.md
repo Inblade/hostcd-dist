@@ -3,6 +3,38 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.23] — 2026-11-21
+
+A security and approvals release: the rest of the approval-gate review, for
+host apps and cluster apps alike. No new resource kinds.
+
+### Security
+- **A cluster-app rollback no longer bypasses the approval gate.** It applied a
+  past revision immediately, so a single admin could change a gated cluster app
+  without a second approval. It now waits for approval like a sync, and a sync
+  window that blocks manual syncs blocks it too. Upgrade is recommended if you
+  use approval gates with cluster apps. (#243)
+
+### Fixed
+- **Gated cluster apps self-heal to the approved revision**, as host apps do
+  since 0.3.22: drift is restored automatically, a new revision still waits for
+  approval and is shown OutOfSync meanwhile. (#243)
+- **Approval requests can be cancelled** by any admin (including the requester)
+  from the app view or `DELETE /api/apps/{name}/pending` /
+  `DELETE /api/cluster-apps/{name}/pending`; cancellations are audited. (#243)
+- **Requests show what they would apply** — the revision, and whether it is a
+  rollback. A request made for a branch head that has since moved on is marked
+  outdated and can no longer be approved, only cancelled. (#243)
+- **A request with nothing to do is refused** (every target already runs that
+  revision with no drift), and an approved rollback of a host app now runs and is
+  recorded as a rollback rather than a plain sync. (#243)
+
+### Changed
+- The app view explains a gated automated policy as "Revision changes require
+  approval. Drift from the last approved revision is self-healed automatically."
+  A sync window that blocks automated sync is a change freeze and pauses
+  self-heal too; this is now documented. (#243)
+
 ## [0.3.22] — 2026-11-21
 
 A small fix release: approval gates and self-heal now work together. No new
