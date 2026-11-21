@@ -6,7 +6,8 @@ name: publish-sync
 # The hostcd core release workflow pushes a `docs/sync-<version>` branch here
 # using a token that only has contents:write (it can push a branch, but cannot
 # open a PR cross-repo). This workflow — running inside this repo with the
-# repo's own GITHUB_TOKEN — opens the PR and arms auto-merge. The companion
+# repo's own GITHUB_TOKEN — opens the PR and arms auto-merge (or merges
+# directly once the required check has already passed). The companion
 # site-consistency job runs on the same branch push, so the required
 # "site-consistency" check is already green on the PR head commit and GitHub
 # squash-merges the sync as soon as it passes.
@@ -44,7 +45,27 @@ jobs:
               --body "Automated documentation sync for ${ver}, opened by the publish-sync workflow (the core release only pushes the branch)."
           fi
           # Arm auto-merge; GitHub lands it once the required site-consistency
-          # check (running on this same push) is green. Non-fatal so a transient
-          # hiccup leaves the PR open for a manual merge rather than failing loud.
-          gh pr merge "$BR" --squash --auto --delete-branch \
-            || echo "::warning title=auto-merge not armed::open the PR for $BR on $GH_REPO and merge it manually"
+          # check (running on this same push) is green. GitHub refuses to ARM
+          # auto-merge when nothing is pending any more ("Pull request is in
+          # clean/unstable status") — e.g. site-consistency already finished
+          # before this step ran (v0.3.22). In that case the requirements are
+          # met, so merge directly. Retry for a while so a slow check or a
+          # transient API error still ends in a merge; the ruleset still
+          # enforces site-consistency, so a direct merge cannot skip it.
+          for i in $(seq 1 30); do
+            if gh pr merge "$BR" --squash --auto --delete-branch; then
+              exit 0
+            fi
+            st="$(gh pr view "$BR" --json mergeStateStatus --jq .mergeStateStatus || true)"
+            case "$st" in
+              CLEAN|UNSTABLE|HAS_HOOKS)
+                if gh pr merge "$BR" --squash --delete-branch; then
+                  exit 0
+                fi
+                ;;
+            esac
+            echo "merge state: ${st:-unknown}; retrying in 20s ($i/30)"
+            sleep 20
+          done
+          # Non-fatal: leave the PR open for a manual merge rather than failing loud.
+          echo "::warning title=docs-sync not merged::open the PR for $BR on $GH_REPO and merge it manually"
