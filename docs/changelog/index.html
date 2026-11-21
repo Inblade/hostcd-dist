@@ -33,6 +33,28 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to hostcd are documented here. This project uses date-based
 <code>vMAJOR.MINOR.PATCH</code> tags; security releases are called out explicitly.</p>
+<h2 id="0322--2026-11-21">[0.3.22] — 2026-11-21</h2>
+<p>A small fix release: approval gates and self-heal now work together. No new
+resource kinds or features.</p>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li><strong>Self-heal works under an approval gate.</strong> An app in a project that requires
+approval, with automated sync and self-heal on, now restores the revision a
+host already runs (a stopped service, a hand-edited file) without a second
+admin. Restoring is not a new change, so only moving to a new revision still
+waits for approval. Previously the gate turned self-heal off entirely, while
+the UI still showed &quot;Auto, self-heal&quot;. (#240)</li>
+<li><strong>The UI shows when an approval gate narrows the automated policy</strong> (&quot;approval
+required&quot;), and a host holding the approved revision while a newer one waits
+is reported OutOfSync with the reason instead of Synced. (#240)</li>
+<li><strong>Stale approval requests are dismissed automatically.</strong> A pending sync whose
+revision every target host already runs, with no drift, is cleared and
+recorded in the audit log, instead of waiting for a second admin forever.
+(#240)</li>
+<li><strong>Hosts over the Community host cap self-heal again.</strong> A frozen host keeps
+restoring the revision it last accepted, as documented; it never actually
+did. (#240)</li>
+</ul>
 <h2 id="0321--2026-11-16">[0.3.21] — 2026-11-16</h2>
 <p>A security release. The fixes from the 2026-11 security review that had landed on
 <code>main</code> are now shipped; no new resource kinds or features.</p>
@@ -69,7 +91,7 @@ nothing new, or offers the update (one-click when the server has the updater
 configured) — so an operator no longer has to wait out the background poll or
 rely on the passive banner.</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 <ul>
 <li><strong>Settings were stale right after a form login.</strong> <code>/api/settings</code> is now
 refetched immediately after login (as it already was on a page reload), so the
@@ -149,7 +171,7 @@ trusted network). A server started manually without the token still leaves
 agent — so <code>sha256sum -c</code> can no longer verify a release green while an artifact
 that silently failed to build is simply absent from <code>SHA256SUMS</code>.</li>
 </ul>
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 <ul>
 <li>The modal/drawer scrim is now a neutral black, so it visibly dims the content
 behind it on the dark theme (it previously matched the dark page background and
@@ -200,7 +222,7 @@ nothing has been written yet; an undeliverable forward returns <code>503</code> 
 <code>Retry-After</code> rather than a hard <code>502</code>.</li>
 <li>HA remains an <strong>Enterprise preview</strong> pending a multi-day two-node soak.</li>
 </ul>
-<h3 id="fixed-2">Fixed</h3>
+<h3 id="fixed-3">Fixed</h3>
 <ul>
 <li>The server <strong>refuses a server-side install from a stale <code>-agent-dist</code></strong>
 (prevents a silent agent downgrade) and warns at startup on a version mismatch.</li>
@@ -241,7 +263,7 @@ package/service/user/group names.</li>
 <code>package</code>/<code>file</code>/<code>service</code>). See <code>docs/WINDOWS.md</code>.</li>
 <li>UI: view and edit a host's admin-assigned targeting labels.</li>
 </ul>
-<h3 id="fixed-3">Fixed</h3>
+<h3 id="fixed-4">Fixed</h3>
 <ul>
 <li>Documentation consistency (pricing/trial wording); self-contained public
 release notes.</li>

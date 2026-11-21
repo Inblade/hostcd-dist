@@ -3,6 +3,29 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.22] — 2026-11-21
+
+A small fix release: approval gates and self-heal now work together. No new
+resource kinds or features.
+
+### Fixed
+- **Self-heal works under an approval gate.** An app in a project that requires
+  approval, with automated sync and self-heal on, now restores the revision a
+  host already runs (a stopped service, a hand-edited file) without a second
+  admin. Restoring is not a new change, so only moving to a new revision still
+  waits for approval. Previously the gate turned self-heal off entirely, while
+  the UI still showed "Auto, self-heal". (#240)
+- **The UI shows when an approval gate narrows the automated policy** ("approval
+  required"), and a host holding the approved revision while a newer one waits
+  is reported OutOfSync with the reason instead of Synced. (#240)
+- **Stale approval requests are dismissed automatically.** A pending sync whose
+  revision every target host already runs, with no drift, is cleared and
+  recorded in the audit log, instead of waiting for a second admin forever.
+  (#240)
+- **Hosts over the Community host cap self-heal again.** A frozen host keeps
+  restoring the revision it last accepted, as documented; it never actually
+  did. (#240)
+
 ## [0.3.21] — 2026-11-16
 
 A security release. The fixes from the 2026-11 security review that had landed on

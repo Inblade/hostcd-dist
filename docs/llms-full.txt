@@ -139,7 +139,7 @@ A **host** is a machine running the agent. Hosts carry **labels** that applicati
 
 ## Projects and approval gates (Team)
 
-A **project** is a guard rail around a set of applications: it can restrict which source repos and destinations are allowed, define sync windows, and **require approval**. When a project requires approval, a sync (or rollback) of its apps is **not** applied automatically — it becomes a pending request that a *different* admin must approve. This gives a two-person rule for production changes; drift is still shown while a change waits.
+A **project** is a guard rail around a set of applications: it can restrict which source repos and destinations are allowed, define sync windows, and **require approval**. When a project requires approval, a sync (or rollback) of its apps is **not** applied automatically — it becomes a pending request that a *different* admin must approve. This gives a two-person rule for production changes; drift is still shown while a change waits. Self-heal is not a change, so it still works under a gate: an app with automated sync and self-heal keeps restoring the revision a host already runs (for example a stopped service or a hand-edited file), but never moves to a new revision until it is approved. A pending request that no longer has anything to do — every target host already runs that revision with no drift — is dismissed automatically and recorded in the audit log.
 
 ## Notifications (Team)
 

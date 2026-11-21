@@ -16,7 +16,6 @@ The pages below are plain Markdown, written to be read directly by an assistant 
 
 ## Optional
 
-- [Ansible ran successfully. So why are my Linux hosts still different?](https://hostcd.dev/blog/ansible-success-drift/): a concrete PostgreSQL failure showing the difference between drift, sync status and resource health.
 - [Full docs as one file](https://hostcd.dev/llms-full.txt): every guide page above concatenated into one Markdown document for one-shot ingestion.
 - [Install script](https://github.com/Inblade/hostcd-dist/releases/latest/download/install.sh): the signed installer referenced throughout the docs.
 - [Source repository README](https://github.com/Inblade/hostcd): project scope, stability tiers, and the reliability drill.
