@@ -200,6 +200,17 @@ hostcd upgrades server-first: upgrade `hostcd-server`, then the agents. The prot
 
 Upgrade an agent by re-running the agent install (or swapping the verified binary and `systemctl restart hostcd-agent`); the token in `/etc/hostcd/agent.env` is preserved, so there is no re-enrolment.
 
+## Agent self-upgrade (no SSH, no RDP)
+
+From **v0.3.25** an agent can upgrade itself over the connection it already makes to the server — Linux and Windows alike, with no inbound access to the host. Requirements: the server runs with `-agent-dist` (the installer stages it with `HOSTCD_AGENT_DIST`), and the directory holds the release's agent binaries **and** its `agent-manifest.json` + `agent-manifest.json.sig`. Agents older than v0.3.25 ignore the request, so they need one last manual upgrade.
+
+Open a host and click **Upgrade agent to vX** (or `POST /api/hosts/{name}/agent-upgrade`, admin; `DELETE` cancels). Upgrade one host first, then the rest — each request is per host and audited. What happens:
+
+1. The poll response carries the target version. The agent refuses anything that is not newer than itself.
+2. It downloads `agent-manifest.json` and its signature from the server and verifies them against the release key **compiled into the agent**. The signing key exists only in the release pipeline, so a tampered `agent-dist`, a man-in-the-middle or the server itself cannot hand an agent an unofficial build or replay an older signed release. (The server can still change what the agent applies — that is its job — so protect the server as you would any configuration-management controller.)
+3. It downloads its platform's binary, checks the sha256 from the manifest, runs it with `-version`, then swaps it in, keeping the previous binary as `hostcd-agent.bak` (`hostcd-agent.exe.bak` on Windows), and restarts: systemd restarts it on Linux, and on Windows the agent re-runs its `hostcd-agent` scheduled task (set `windowsTask:` in `agent.yaml` if yours is named differently).
+4. The new agent is on probation until it reaches the server. If it cannot do so within 5 minutes, or crashes on start three times, it restores the previous binary. The host page shows the result (**Succeeded**, or **Failed** with the reason), and both outcomes land in the audit log.
+
 ## Per-host agent tokens (SSH-less hosts)
 
 Install-over-SSH mints a per-host token automatically, so each Linux host authenticates with its own token and can be revoked on its own. A host with no SSH path — a Windows agent, or an air-gapped host — enrols with the shared token instead. From **v0.3.17** you can move it onto a per-host token: mint one with `POST /api/hosts/{name}/token` (admin), set it in the agent's config, and restart the agent. The token is returned once and the host's previous token stops working immediately, so set it promptly. Once every host has a per-host token you can retire the shared token. For the exact Windows (RDP) steps see the Windows guide.

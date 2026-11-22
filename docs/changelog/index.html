@@ -33,6 +33,22 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to hostcd are documented here. This project uses date-based
 <code>vMAJOR.MINOR.PATCH</code> tags; security releases are called out explicitly.</p>
+<h2 id="0325--2026-11-22">[0.3.25] — 2026-11-22</h2>
+<p>Agents upgrade themselves — Linux and Windows — with no SSH or RDP.</p>
+<h3 id="added">Added</h3>
+<ul>
+<li><strong>Agent self-upgrade over the pull channel.</strong> An admin clicks <strong>Upgrade agent
+to vX</strong> on a host (or <code>POST /api/hosts/{name}/agent-upgrade</code>); the agent
+downloads the release from the server, verifies the release manifest against
+a signing key compiled into the agent, checks the binary's sha256 and that it
+runs as the requested version, swaps itself (keeping a <code>.bak</code>) and restarts —
+via systemd on Linux, by re-running its scheduled task on Windows. Downgrades
+and unsigned or tampered releases are refused. A new agent that cannot reach
+the server within 5 minutes restores the previous binary; the host page and
+the audit log show the outcome. Releases now ship <code>agent-manifest.json</code> and
+its signature, and the installer stages them into <code>-agent-dist</code>. Agents older
+than v0.3.25 need one last manual upgrade. (#249)</li>
+</ul>
 <h2 id="0324--2026-11-22">[0.3.24] — 2026-11-22</h2>
 <p>A one-fix release for the approval gate.</p>
 <h3 id="fixed">Fixed</h3>
@@ -128,7 +144,7 @@ two days and on each release tag; the port-forward proxy moved off the deprecate
 <h2 id="0320--2026-11-12">[0.3.20] — 2026-11-12</h2>
 <p>A small maintenance release: the fixes accumulated since v0.3.19, no new resource
 kinds or features.</p>
-<h3 id="added">Added</h3>
+<h3 id="added-1">Added</h3>
 <ul>
 <li><strong>&quot;Check for updates&quot; button</strong> in Settings → Software updates. It forces a fresh
 check against the release channel and shows &quot;You're up to date&quot; when there is
@@ -170,7 +186,7 @@ just the synthetic CI drill.</li>
 </li>
 </ul>
 <h2 id="0319--2026-11-11">[0.3.19] — 2026-11-11</h2>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li><strong><code>nvidia_gpu</code> resource kind</strong> — converge a GPU bare-metal host to the full
 NVIDIA monitoring stack from Git in one declaration: the datacenter driver
@@ -192,7 +208,7 @@ version on the landing and README is bumped on every release, so neither drifts
 from the shipped version again.</li>
 </ul>
 <h2 id="0318--2026-11-11">[0.3.18] — 2026-11-11</h2>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li><strong>Read-only mode</strong> (<code>-read-only</code>) — the server refuses every mutating request
 with a clean JSON <code>403</code> and advertises <code>readOnly:true</code> in the session, while the
@@ -231,7 +247,7 @@ runbook for moving an SSH-less Windows agent to a per-host token; a top-level
 (approval gates / notifications / audit export are Team, not Enterprise).</li>
 </ul>
 <h2 id="0317--2026-11-10">[0.3.17] — 2026-11-10</h2>
-<h3 id="added-3">Added</h3>
+<h3 id="added-4">Added</h3>
 <ul>
 <li><strong>Mint a per-host agent token for an existing host</strong> — <code>POST /api/hosts/{name}/token</code>
 (admin-only, audited). Per-host tokens were previously minted only by
@@ -272,7 +288,7 @@ nothing has been written yet; an undeliverable forward returns <code>503</code> 
 <li>The server <strong>refuses a server-side install from a stale <code>-agent-dist</code></strong>
 (prevents a silent agent downgrade) and warns at startup on a version mismatch.</li>
 </ul>
-<h3 id="added-4">Added</h3>
+<h3 id="added-5">Added</h3>
 <ul>
 <li><code>deploy/install.sh</code> can <strong>auto-populate <code>-agent-dist</code></strong> with cosign/SHA256SUMS-
 verified agents in lockstep with the server version (opt-in via
@@ -302,7 +318,7 @@ scoped viewers.</li>
 package/service/user/group names.</li>
 <li>Desktop: <code>tokio</code> → 1.54.1; <code>cargo-audit</code> now runs in required CI.</li>
 </ul>
-<h3 id="added-5">Added</h3>
+<h3 id="added-6">Added</h3>
 <ul>
 <li>Windows agent <code>hostcd-agent-windows-amd64.exe</code> published in releases (late beta;
 <code>package</code>/<code>file</code>/<code>service</code>). See <code>docs/WINDOWS.md</code>.</li>
