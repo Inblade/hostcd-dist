@@ -33,6 +33,18 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to hostcd are documented here. This project uses date-based
 <code>vMAJOR.MINOR.PATCH</code> tags; security releases are called out explicitly.</p>
+<h2 id="0324--2026-11-22">[0.3.24] — 2026-11-22</h2>
+<p>A one-fix release for the approval gate.</p>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li><strong>A commit that changes nothing for a gated app no longer needs approval.</strong>
+An app held at its approved revision (approval gate with self-heal, or a host
+over the Community cap) stayed OutOfSync after any newer commit — a revert, or
+a commit to another app in the same repository — until a second admin
+approved a no-op. When the new revision renders exactly like the approved one
+for a host, the host now moves to it on its own; a revision that changes the
+host's desired state still waits for approval. (#246)</li>
+</ul>
 <h2 id="0323--2026-11-21">[0.3.23] — 2026-11-21</h2>
 <p>A security and approvals release: the rest of the approval-gate review, for
 host apps and cluster apps alike. No new resource kinds.</p>
@@ -44,7 +56,7 @@ without a second approval. It now waits for approval like a sync, and a sync
 window that blocks manual syncs blocks it too. Upgrade is recommended if you
 use approval gates with cluster apps. (#243)</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 <ul>
 <li><strong>Gated cluster apps self-heal to the approved revision</strong>, as host apps do
 since 0.3.22: drift is restored automatically, a new revision still waits for
@@ -69,7 +81,7 @@ self-heal too; this is now documented. (#243)</li>
 <h2 id="0322--2026-11-21">[0.3.22] — 2026-11-21</h2>
 <p>A small fix release: approval gates and self-heal now work together. No new
 resource kinds or features.</p>
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 <ul>
 <li><strong>Self-heal works under an approval gate.</strong> An app in a project that requires
 approval, with automated sync and self-heal on, now restores the revision a
@@ -124,7 +136,7 @@ nothing new, or offers the update (one-click when the server has the updater
 configured) — so an operator no longer has to wait out the background poll or
 rely on the passive banner.</li>
 </ul>
-<h3 id="fixed-2">Fixed</h3>
+<h3 id="fixed-3">Fixed</h3>
 <ul>
 <li><strong>Settings were stale right after a form login.</strong> <code>/api/settings</code> is now
 refetched immediately after login (as it already was on a page reload), so the
@@ -204,7 +216,7 @@ trusted network). A server started manually without the token still leaves
 agent — so <code>sha256sum -c</code> can no longer verify a release green while an artifact
 that silently failed to build is simply absent from <code>SHA256SUMS</code>.</li>
 </ul>
-<h3 id="fixed-3">Fixed</h3>
+<h3 id="fixed-4">Fixed</h3>
 <ul>
 <li>The modal/drawer scrim is now a neutral black, so it visibly dims the content
 behind it on the dark theme (it previously matched the dark page background and
@@ -255,7 +267,7 @@ nothing has been written yet; an undeliverable forward returns <code>503</code> 
 <code>Retry-After</code> rather than a hard <code>502</code>.</li>
 <li>HA remains an <strong>Enterprise preview</strong> pending a multi-day two-node soak.</li>
 </ul>
-<h3 id="fixed-4">Fixed</h3>
+<h3 id="fixed-5">Fixed</h3>
 <ul>
 <li>The server <strong>refuses a server-side install from a stale <code>-agent-dist</code></strong>
 (prevents a silent agent downgrade) and warns at startup on a version mismatch.</li>
@@ -296,7 +308,7 @@ package/service/user/group names.</li>
 <code>package</code>/<code>file</code>/<code>service</code>). See <code>docs/WINDOWS.md</code>.</li>
 <li>UI: view and edit a host's admin-assigned targeting labels.</li>
 </ul>
-<h3 id="fixed-5">Fixed</h3>
+<h3 id="fixed-6">Fixed</h3>
 <ul>
 <li>Documentation consistency (pricing/trial wording); self-contained public
 release notes.</li>

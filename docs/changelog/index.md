@@ -3,6 +3,19 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.24] — 2026-11-22
+
+A one-fix release for the approval gate.
+
+### Fixed
+- **A commit that changes nothing for a gated app no longer needs approval.**
+  An app held at its approved revision (approval gate with self-heal, or a host
+  over the Community cap) stayed OutOfSync after any newer commit — a revert, or
+  a commit to another app in the same repository — until a second admin
+  approved a no-op. When the new revision renders exactly like the approved one
+  for a host, the host now moves to it on its own; a revision that changes the
+  host's desired state still waits for approval. (#246)
+
 ## [0.3.23] — 2026-11-21
 
 A security and approvals release: the rest of the approval-gate review, for
