@@ -3,6 +3,25 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.26] — 2026-11-22
+
+A fix for signed-commit verification, plus the hardening guide.
+
+### Fixed
+- **Signed-commit verification no longer stops self-heal after a server
+  restart.** With `-allowed-signers`/`-gpg-home` on, a server that restarted
+  while a branch head was unsigned (e.g. a commit made in the GitHub web editor)
+  had no verified revision to serve, so every host of that application got no
+  desired state and drift went unhealed until someone pushed a signed commit.
+  The server now falls back to the newest revision the application already
+  deployed, if it still verifies, and shows the rejection. Found while enabling
+  verification on the pilot.
+
+### Documentation
+- Security guide: step-by-step agent mTLS and signed-commit setup, and a
+  correction — the flag is `-allowed-signers` (there is no `-verify`), and the
+  release pipeline now holds one private key (the agent-update signing key).
+
 ## [0.3.25] — 2026-11-22
 
 Agents upgrade themselves — Linux and Windows — with no SSH or RDP.
