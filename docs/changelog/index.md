@@ -3,6 +3,23 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.25] — 2026-11-22
+
+Agents upgrade themselves — Linux and Windows — with no SSH or RDP.
+
+### Added
+- **Agent self-upgrade over the pull channel.** An admin clicks **Upgrade agent
+  to vX** on a host (or `POST /api/hosts/{name}/agent-upgrade`); the agent
+  downloads the release from the server, verifies the release manifest against
+  a signing key compiled into the agent, checks the binary's sha256 and that it
+  runs as the requested version, swaps itself (keeping a `.bak`) and restarts —
+  via systemd on Linux, by re-running its scheduled task on Windows. Downgrades
+  and unsigned or tampered releases are refused. A new agent that cannot reach
+  the server within 5 minutes restores the previous binary; the host page and
+  the audit log show the outcome. Releases now ship `agent-manifest.json` and
+  its signature, and the installer stages them into `-agent-dist`. Agents older
+  than v0.3.25 need one last manual upgrade. (#249)
+
 ## [0.3.24] — 2026-11-22
 
 A one-fix release for the approval gate.
