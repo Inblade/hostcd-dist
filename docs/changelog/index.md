@@ -3,6 +3,18 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.27] — 2026-11-22
+
+A status fix for signed-commit verification.
+
+### Fixed
+- **An application held on its last verified revision shows its real status.**
+  While the branch head is rejected by signed-commit verification, hosts keep
+  running (and self-healing) the last verified revision, but the application
+  read Sync/Health **Unknown**. It now reports its hosts' status against that
+  revision; the "latest commit is not deployed" banner still explains the
+  rejection.
+
 ## [0.3.26] — 2026-11-22
 
 A fix for signed-commit verification, plus the hardening guide.

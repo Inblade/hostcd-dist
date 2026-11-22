@@ -53,7 +53,7 @@ What to know before switching it on:
 
 - **Sign the branch head first.** Push a signed (even empty) commit to every repository your applications track *before* restarting with the flag; the application page then shows the signer.
 - Only the commit an application deploys — the head of its tracked branch, or a revision you sync to — is checked, not its ancestors. A signer vouches for the tree they sign.
-- An unsigned or wrongly signed head is **rejected**: hosts stay on the last verified revision (the application shows "rejected … hosts stay on …") until a signed commit lands. After a server restart the server falls back to the newest revision the application already deployed, if it still verifies, so self-heal keeps running.
+- An unsigned or wrongly signed head is **rejected**: hosts stay on the last verified revision (the application shows "rejected … hosts stay on …", and its Sync/Health still reflect the hosts against that revision) until a signed commit lands. After a server restart the server falls back to the newest revision the application already deployed, if it still verifies, so self-heal keeps running.
 - Commits made in a forge's web editor are signed by the forge's own key (or not at all) and are rejected unless you allow that key. Keep the signing key safe: losing it means adding a new key to `allowed_signers` and restarting.
 
 Report vulnerabilities per the source repository's `SECURITY.md`. Next: [overview](overview.md) · [operations](operations.md).
