@@ -20,6 +20,12 @@ permissions:
 
 jobs:
   site-consistency:
+    # docs/sync-* already gets this exact required check from the branch-push
+    # event above. publish-sync may merge and delete that branch before the
+    # duplicate pull_request run is assigned a runner, leaving a misleading red
+    # run with zero jobs. Keep pull_request coverage for every normal PR, but
+    # skip only that redundant automated invocation.
+    if: github.event_name != 'pull_request' || !startsWith(github.head_ref, 'docs/sync-')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
