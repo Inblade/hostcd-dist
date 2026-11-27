@@ -3,6 +3,30 @@
 All notable changes to hostcd are documented here. This project uses date-based
 `vMAJOR.MINOR.PATCH` tags; security releases are called out explicitly.
 
+## [0.3.28] — 2026-11-27
+
+A fix for sealing-key rotation, plus two dependency security updates.
+
+### Fixed
+- **Sealing-key rotation now re-seals the audit-sink secret.** Rotation
+  (Settings → Security, `POST /api/admin/rotate-sealing-key`) skipped the
+  audit-sink HMAC secret. After a rotation, audit deliveries went out
+  **unsigned** with nothing in the log, and a SIEM that checks
+  `X-Hostcd-Signature` rejected them. Every sealed field is now listed in one
+  place, which rotation and the secret counters both use. A test fails if a new
+  sealed field is added without being listed. A secret that cannot be opened is
+  now logged. If you rotated the key while an audit sink was configured, enter
+  the audit-sink secret again.
+- The "sealed secrets" count in the trust center and on the recovery screen
+  now includes the audit-sink secret, the agent CA and the SAML SP key. It no
+  longer counts agent tokens, which are stored as one-way digests.
+
+### Security
+- `github.com/gorilla/websocket` updated to the upstream fix for GO-2026-6278:
+  a weak random mask key on the host and node terminals. The impact on hostcd
+  is low, because the server side does not mask its frames.
+- Desktop app: the `cookie` crate is updated to 0.18.3 (RUSTSEC-2026-0594).
+
 ## [0.3.27] — 2026-11-22
 
 A status fix for signed-commit verification.

@@ -33,9 +33,33 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to hostcd are documented here. This project uses date-based
 <code>vMAJOR.MINOR.PATCH</code> tags; security releases are called out explicitly.</p>
+<h2 id="0328--2026-11-27">[0.3.28] — 2026-11-27</h2>
+<p>A fix for sealing-key rotation, plus two dependency security updates.</p>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li><strong>Sealing-key rotation now re-seals the audit-sink secret.</strong> Rotation
+(Settings → Security, <code>POST /api/admin/rotate-sealing-key</code>) skipped the
+audit-sink HMAC secret. After a rotation, audit deliveries went out
+<strong>unsigned</strong> with nothing in the log, and a SIEM that checks
+<code>X-Hostcd-Signature</code> rejected them. Every sealed field is now listed in one
+place, which rotation and the secret counters both use. A test fails if a new
+sealed field is added without being listed. A secret that cannot be opened is
+now logged. If you rotated the key while an audit sink was configured, enter
+the audit-sink secret again.</li>
+<li>The &quot;sealed secrets&quot; count in the trust center and on the recovery screen
+now includes the audit-sink secret, the agent CA and the SAML SP key. It no
+longer counts agent tokens, which are stored as one-way digests.</li>
+</ul>
+<h3 id="security">Security</h3>
+<ul>
+<li><code>github.com/gorilla/websocket</code> updated to the upstream fix for GO-2026-6278:
+a weak random mask key on the host and node terminals. The impact on hostcd
+is low, because the server side does not mask its frames.</li>
+<li>Desktop app: the <code>cookie</code> crate is updated to 0.18.3 (RUSTSEC-2026-0594).</li>
+</ul>
 <h2 id="0327--2026-11-22">[0.3.27] — 2026-11-22</h2>
 <p>A status fix for signed-commit verification.</p>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 <ul>
 <li><strong>An application held on its last verified revision shows its real status.</strong>
 While the branch head is rejected by signed-commit verification, hosts keep
@@ -46,7 +70,7 @@ rejection.</li>
 </ul>
 <h2 id="0326--2026-11-22">[0.3.26] — 2026-11-22</h2>
 <p>A fix for signed-commit verification, plus the hardening guide.</p>
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 <ul>
 <li><strong>Signed-commit verification no longer stops self-heal after a server
 restart.</strong> With <code>-allowed-signers</code>/<code>-gpg-home</code> on, a server that restarted
@@ -81,7 +105,7 @@ than v0.3.25 need one last manual upgrade. (#249)</li>
 </ul>
 <h2 id="0324--2026-11-22">[0.3.24] — 2026-11-22</h2>
 <p>A one-fix release for the approval gate.</p>
-<h3 id="fixed-2">Fixed</h3>
+<h3 id="fixed-3">Fixed</h3>
 <ul>
 <li><strong>A commit that changes nothing for a gated app no longer needs approval.</strong>
 An app held at its approved revision (approval gate with self-heal, or a host
@@ -94,7 +118,7 @@ host's desired state still waits for approval. (#246)</li>
 <h2 id="0323--2026-11-21">[0.3.23] — 2026-11-21</h2>
 <p>A security and approvals release: the rest of the approval-gate review, for
 host apps and cluster apps alike. No new resource kinds.</p>
-<h3 id="security">Security</h3>
+<h3 id="security-1">Security</h3>
 <ul>
 <li><strong>A cluster-app rollback no longer bypasses the approval gate.</strong> It applied a
 past revision immediately, so a single admin could change a gated cluster app
@@ -102,7 +126,7 @@ without a second approval. It now waits for approval like a sync, and a sync
 window that blocks manual syncs blocks it too. Upgrade is recommended if you
 use approval gates with cluster apps. (#243)</li>
 </ul>
-<h3 id="fixed-3">Fixed</h3>
+<h3 id="fixed-4">Fixed</h3>
 <ul>
 <li><strong>Gated cluster apps self-heal to the approved revision</strong>, as host apps do
 since 0.3.22: drift is restored automatically, a new revision still waits for
@@ -127,7 +151,7 @@ self-heal too; this is now documented. (#243)</li>
 <h2 id="0322--2026-11-21">[0.3.22] — 2026-11-21</h2>
 <p>A small fix release: approval gates and self-heal now work together. No new
 resource kinds or features.</p>
-<h3 id="fixed-4">Fixed</h3>
+<h3 id="fixed-5">Fixed</h3>
 <ul>
 <li><strong>Self-heal works under an approval gate.</strong> An app in a project that requires
 approval, with automated sync and self-heal on, now restores the revision a
@@ -149,7 +173,7 @@ did. (#240)</li>
 <h2 id="0321--2026-11-16">[0.3.21] — 2026-11-16</h2>
 <p>A security release. The fixes from the 2026-11 security review that had landed on
 <code>main</code> are now shipped; no new resource kinds or features.</p>
-<h3 id="security-1">Security</h3>
+<h3 id="security-2">Security</h3>
 <ul>
 <li><strong>The standalone <code>hostcd</code> server authenticates <code>/status</code>, <code>/metrics</code> and
 <code>/sync</code>.</strong> When a sync token is configured these endpoints are no longer open;
@@ -182,7 +206,7 @@ nothing new, or offers the update (one-click when the server has the updater
 configured) — so an operator no longer has to wait out the background poll or
 rely on the passive banner.</li>
 </ul>
-<h3 id="fixed-5">Fixed</h3>
+<h3 id="fixed-6">Fixed</h3>
 <ul>
 <li><strong>Settings were stale right after a form login.</strong> <code>/api/settings</code> is now
 refetched immediately after login (as it already was on a page reload), so the
@@ -249,7 +273,7 @@ the read-only banner: <code>-read-only-note</code> sets the reset-cadence senten
 <code>-read-only-link</code> renders a &quot;Learn more →&quot; link. This is what powers the public
 anonymous demo.</li>
 </ul>
-<h3 id="security-2">Security</h3>
+<h3 id="security-3">Security</h3>
 <ul>
 <li><strong>Toolchain bumped to Go 1.26.11</strong> — picks up the <code>net/http</code> fix for
 GO-2026-6859.</li>
@@ -262,7 +286,7 @@ trusted network). A server started manually without the token still leaves
 agent — so <code>sha256sum -c</code> can no longer verify a release green while an artifact
 that silently failed to build is simply absent from <code>SHA256SUMS</code>.</li>
 </ul>
-<h3 id="fixed-6">Fixed</h3>
+<h3 id="fixed-7">Fixed</h3>
 <ul>
 <li>The modal/drawer scrim is now a neutral black, so it visibly dims the content
 behind it on the dark theme (it previously matched the dark page background and
@@ -290,7 +314,7 @@ host's previous token immediately, so the agent is briefly offline until it is
 reconfigured with the new token.</li>
 </ul>
 <h2 id="0316--2026-11-09--reliability--ha-hardening">[0.3.16] — 2026-11-09 — reliability &amp; HA hardening</h2>
-<h3 id="security-3">Security</h3>
+<h3 id="security-4">Security</h3>
 <ul>
 <li><strong>Fixed a reload-path panic (DoS):</strong> a config reload that produced a nil
 result set could panic the server; reload is now nil-safe.</li>
@@ -313,7 +337,7 @@ nothing has been written yet; an undeliverable forward returns <code>503</code> 
 <code>Retry-After</code> rather than a hard <code>502</code>.</li>
 <li>HA remains an <strong>Enterprise preview</strong> pending a multi-day two-node soak.</li>
 </ul>
-<h3 id="fixed-7">Fixed</h3>
+<h3 id="fixed-8">Fixed</h3>
 <ul>
 <li>The server <strong>refuses a server-side install from a stale <code>-agent-dist</code></strong>
 (prevents a silent agent downgrade) and warns at startup on a version mismatch.</li>
@@ -335,7 +359,7 @@ when its DSN is missing, adds an embedded-key SSO end-to-end check, and the
 RUSTSEC-2024-0429 glib ignore self-expires once glib reaches ≥ 0.20.</li>
 </ul>
 <h2 id="0315--2026-11-08--security-release">[0.3.15] — 2026-11-08 — security release</h2>
-<h3 id="security-4">Security</h3>
+<h3 id="security-5">Security</h3>
 <ul>
 <li><strong>High:</strong> fixed an app-destination <strong>label-scope bypass</strong> — a per-host agent
 token could read another scope's secret-bearing manifest by reporting crafted
@@ -354,13 +378,13 @@ package/service/user/group names.</li>
 <code>package</code>/<code>file</code>/<code>service</code>). See <code>docs/WINDOWS.md</code>.</li>
 <li>UI: view and edit a host's admin-assigned targeting labels.</li>
 </ul>
-<h3 id="fixed-8">Fixed</h3>
+<h3 id="fixed-9">Fixed</h3>
 <ul>
 <li>Documentation consistency (pricing/trial wording); self-contained public
 release notes.</li>
 </ul>
 <h2 id="0314--2026-11-07">[0.3.14] — 2026-11-07</h2>
-<h3 id="security-5">Security</h3>
+<h3 id="security-6">Security</h3>
 <ul>
 <li>Bumped <code>golang.org/x/oauth2</code> to v0.27.0 (CVE-2025-22868).</li>
 </ul>
